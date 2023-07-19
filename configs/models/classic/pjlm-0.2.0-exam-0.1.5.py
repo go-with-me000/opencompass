@@ -1,4 +1,4 @@
-from opencompass.models import LLMv2
+from opencompass.models.internal import LLMv2
 
 models = [
     dict(abbr='PJLM-v0.2.0-Exam-v0.1.5',

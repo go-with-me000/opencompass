@@ -1,5 +1,6 @@
-from opencompass.models import LLMv2
 from mmengine.config import read_base
+
+from opencompass.models.internal import LLMv2
 
 with read_base():
     from .._meta_templates import _template_0_1_0_ChatPJLM_v0_2_2rc5

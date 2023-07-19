@@ -1,4 +1,4 @@
-from opencompass.models import LLama
+from opencompass.models.internal import LLama
 
 models = [
     # LLama65B

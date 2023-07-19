@@ -1,31 +1,33 @@
 # This config aims to
-from opencompass.partitioners import SizePartitioner, NaivePartitioner
-from opencompass.runners import SlurmRunner
-from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
-from opencompass.models import LLMv2
 from mmengine.config import read_base
 
+from opencompass.models.internal import LLMv2
+from opencompass.partitioners import NaivePartitioner, SizePartitioner
+from opencompass.runners import SlurmRunner
+from opencompass.tasks import OpenICLEvalTask, OpenICLInferTask
+
 with read_base():
-    from .datasets.FewCLUE_chid.FewCLUE_chid_ppl import chid_datasets
-    from .datasets.FewCLUE_cluewsc.FewCLUE_cluewsc_ppl import cluewsc_datasets
-    from .datasets.FewCLUE_eprstmt.FewCLUE_eprstmt_ppl import eprstmt_datasets
+    from .datasets.agieval.agieval_gen import agieval_datasets
+    from .datasets.ceval.ceval_ppl import ceval_datasets
     from .datasets.CLUE_CMRC.CLUE_CMRC_gen import CMRC_datasets
     from .datasets.CLUE_DRCD.CLUE_DRCD_gen import DRCD_datasets
-    from .datasets.humaneval.humaneval_gen import humaneval_datasets
-    from .datasets.mbpp.mbpp_gen import mbpp_datasets
-    from .datasets.math.math_gen import math_datasets
-    from .datasets.gsm8k.gsm8k_gen import gsm8k_datasets
     from .datasets.crowspairs.crowspairs_ppl import crowspairs_datasets
-    from .datasets.realtoxicprompts.realtoxicprompts_gen import realtoxicprompts_datasets
-    from .datasets.truthfulqa.truthfulqa_gen import truthfulqa_datasets
-    from .datasets.race.race_ppl import race_datasets
-    from .datasets.triviaqa.triviaqa_gen import triviaqa_datasets
-    from .datasets.nq.nq_gen import nq_datasets
+    from .datasets.FewCLUE_chid.FewCLUE_chid_ppl import chid_datasets
+    from .datasets.FewCLUE_cluewsc.FewCLUE_cluewsc_ppl import cluewsc_datasets
     from .datasets.FewCLUE_csl.FewCLUE_csl_ppl import csl_datasets
-    from .datasets.agieval.agieval_gen import agieval_datasets
-    from .datasets.mmlu.mmlu_gen import mmlu_datasets
-    from .datasets.ceval.ceval_ppl import ceval_datasets
+    from .datasets.FewCLUE_eprstmt.FewCLUE_eprstmt_ppl import eprstmt_datasets
     from .datasets.GaokaoBench.GaokaoBench_gen import GaokaoBench_datasets
+    from .datasets.gsm8k.gsm8k_gen import gsm8k_datasets
+    from .datasets.humaneval.humaneval_gen import humaneval_datasets
+    from .datasets.math.math_gen import math_datasets
+    from .datasets.mbpp.mbpp_gen import mbpp_datasets
+    from .datasets.mmlu.mmlu_gen import mmlu_datasets
+    from .datasets.nq.nq_gen import nq_datasets
+    from .datasets.race.race_ppl import race_datasets
+    from .datasets.realtoxicprompts.realtoxicprompts_gen import \
+        realtoxicprompts_datasets
+    from .datasets.triviaqa.triviaqa_gen import triviaqa_datasets
+    from .datasets.truthfulqa.truthfulqa_gen import truthfulqa_datasets
 
 openai_key = 'ENV'
 

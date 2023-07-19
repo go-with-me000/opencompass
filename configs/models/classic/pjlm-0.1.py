@@ -1,4 +1,4 @@
-from opencompass.models import LLM
+from opencompass.models.internal import LLM
 
 models = [
     # PJLM-0.1 / 1006-10499
