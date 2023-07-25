@@ -1,10 +1,8 @@
 import unittest
 from unittest.mock import Mock
 
-from pjeval.openicl.openicl.icl_retriever.icl_base_retriever import \
-    BaseRetriever
-
-from pjeval.openicl.openicl import DatasetReader
+from opencompass.openicl import DatasetReader
+from opencompass.openicl.icl_retriever.icl_base_retriever import BaseRetriever
 
 
 class TestBaseRetriever(unittest.TestCase):
