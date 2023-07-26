@@ -37,7 +37,7 @@ pull_github:       # This job runs in the build stage, which runs first.
       when: always
     - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH'
       when: never
-    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>'
+    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>"'
       when: always
   script:
     - git remote add gh https://github.com/InternLM/opencompass.git
