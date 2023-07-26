@@ -17,7 +17,7 @@ lint:       # This job runs in the build stage, which runs first.
   stage: prepare
   image: python:3.10.0
   rules:
-    - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
     - when: always
   tags:
@@ -33,9 +33,11 @@ pull_github:       # This job runs in the build stage, which runs first.
   tags:
     - opencompass
   rules:
-    - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH'
       when: never
-    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>" && ($CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "schedule")'
+    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>'
       when: always
   script:
     - git remote add gh https://github.com/InternLM/opencompass.git
@@ -52,9 +54,11 @@ process_branch:
   stage: process
   image: python:3.10.0
   rules:
-    - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
-    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH'
+      when: never
+    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>"'
       when: always
   tags:
     - opencompass
@@ -110,9 +114,11 @@ push_to_github_and_create_pr:
   # when: manual
   image: python:3.10.0
   rules:
-    - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
-    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH'
+      when: never
+    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>"'
       when: manual
   tags:
     - opencompass
