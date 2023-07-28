@@ -37,7 +37,7 @@ pull_github:       # This job runs in the build stage, which runs first.
       when: always
     - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH'
       when: never
-    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>"'
+    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>" && $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
       when: always
   script:
     - git remote add gh https://github.com/InternLM/opencompass.git
@@ -58,7 +58,7 @@ process_branch:
       when: never
     - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH'
       when: never
-    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>"'
+    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>" && $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
       when: always
   tags:
     - opencompass
@@ -83,8 +83,7 @@ process_branch:
     - git config user.name "${AUTHOR_NAME}"
     - git config user.email "${AUTHOR_EMAIL}"
 
-    - git checkout $CI_COMMIT_REF_NAME
-    - git rebase $INTERNAL_BRANCH || { python tmp/lark.py $LARK_URL "Please rebase it on the latest $INTERNAL_BRANCH locally and push again." --title "$CI_COMMIT_REF_NAME - Rebase failed. "; exit 1; }
+    - git merge $INTERNAL_BRANCH --no-edit || { python tmp/lark.py $LARK_URL "Please rebase it on the latest $INTERNAL_BRANCH locally and push again." --title "$CI_COMMIT_REF_NAME - Rebase failed. "; exit 1; }
     - python opencompass/utils/internal/sync/cleanup_internal.py
     - git add .
     - git commit -m "$COMMIT_MESSAGE"
@@ -105,7 +104,7 @@ process_branch:
     - git push origin github_$CI_COMMIT_REF_NAME -f
     - export title="$CI_COMMIT_REF_NAME - its tidied-up version has been pushed."
     - echo $title
-    - export content="$CI_PROJECT_URL/-/commit/$(git log -1 --format="%H") Please approve the pipeline workflow when you are sure that no internal code has been leaked."
+    - export content="Approve the pipeline workflow when you are sure that no internal code has been leaked. $CI_PROJECT_URL/-/commit/$(git log -1 --format="%H")"
     - python tmp/lark.py "$LARK_URL" "$content" --title "$title"
 
 
@@ -118,7 +117,7 @@ push_to_github_and_create_pr:
       when: never
     - if: '$CI_COMMIT_BRANCH == $INTERNAL_BRANCH'
       when: never
-    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>"'
+    - if: '$CI_COMMIT_AUTHOR !~ "bot <bot@bot.com>" && $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
       when: manual
   tags:
     - opencompass
@@ -131,7 +130,7 @@ push_to_github_and_create_pr:
     # tmp/ won't be tracked by git
     - mkdir tmp/
     - cp opencompass/utils/lark.py tmp/lark.py
-    - python tmp/lark.py "$LARK_URL" "Click https://github.com/gaotongxiao/opencompass/pull/new/github_$CI_COMMIT_REF_NAME to create a PR" --title "$CI_COMMIT_REF_NAME - GitHub PR has been created."
+    - python tmp/lark.py "$LARK_URL" "Please create GitHub PR via https://github.com/gaotongxiao/opencompass/pull/new/github_$CI_COMMIT_REF_NAME" --title "$CI_COMMIT_REF_NAME - GitHub PR is on the way!"
     # If we can have access the key to the origin InterLM repo, we can fully automate the PR process with the following lines
     # - |
     #   type -p curl >/dev/null || (apt update && apt install curl -y)
