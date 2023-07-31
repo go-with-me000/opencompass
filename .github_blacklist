@@ -28,6 +28,7 @@ configs/eval_pjlm.py
 configs/intern_benchmark_base.py
 configs/intern_benchmark_chat.py
 configs/eval_7b.py
+configs/lark.py
 configs/eval_glm130b.py
 configs/eval_hf_causal.py
 configs/eval_hf_llama_7b.py

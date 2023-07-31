@@ -128,8 +128,8 @@ class CLPInferencer(BaseInferencer):
                 choice_ids = list(itertools.chain(*choice_ids))
 
                 get_token_len = partial(
-                    self.model.get_token_len,  # COPYBARA_INTERNAL  # noqa
-                    eos=False)  # COPYBARA_INTERNAL  # noqa
+                    self.model.get_token_len,  # INTERNAL  # noqa
+                    eos=False)  # INTERNAL  # noqa
             get_token_len = self.model.get_token_len
 
             # prepare in context for each example and control the length
