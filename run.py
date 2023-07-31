@@ -143,6 +143,33 @@ def parse_dlc_args(dlc_parser):
                             type=str)
 
 
+# INTERNAL_BEGIN
+def check_model_accessibility(model_cfgs, logger):
+    from mmengine.fileio import exists
+
+    from opencompass.models.internal.llama import LLama
+    from opencompass.models.internal.pjlm import LLM, LLMv2, LLMv3
+    from opencompass.utils.internal.test.proxy import proxy_off, proxy_on
+    proxy_off()
+    for cfg in model_cfgs:
+        if cfg.type in [LLM, LLMv2, LLMv3, LLama]:
+            paths_to_check = [cfg.path]
+            if 'tokenizer_path' in cfg:
+                paths_to_check.append(cfg.tokenizer_path)
+            for path in paths_to_check:
+                if exists(path):
+                    logger.info(f'{path} is accessible')
+                else:
+                    logger.error(
+                        f'{path} is not accessible, please check the path '
+                        'or if you are granted the permission to access.')
+                    exit(-1)
+    proxy_on()
+
+
+# INTERNAL_END
+
+
 def main():
     args = parse_args()
     if args.dry_run:
@@ -155,6 +182,10 @@ def main():
         cfg['work_dir'] = args.work_dir
     else:
         cfg.setdefault('work_dir', './outputs/default/')
+    # INTERNAL_BEGIN
+    if args.mode in ['all', 'infer']:
+        check_model_accessibility(cfg.models, logger)
+    # INTERNAL_END
 
     # cfg_time_str defaults to the current time
     cfg_time_str = dir_time_str = datetime.now().strftime('%Y%m%d_%H%M%S')
