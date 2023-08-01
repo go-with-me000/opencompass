@@ -2,9 +2,56 @@ import os.path as osp
 import tempfile
 from typing import List
 
+from opencompass.datasets import BaseDataset
 from opencompass.openicl.icl_evaluator import BaseEvaluator
-from opencompass.registry import ICL_EVALUATORS, TEXT_POSTPROCESSORS
+from opencompass.registry import ICL_EVALUATORS, TEXT_POSTPROCESSORS, LOAD_DATASET
+from datasets import load_dataset
 
+@LOAD_DATASET.register_module()
+class humanevalDataset(BaseDataset):
+    @staticmethod
+    def load(path: str):
+        import os
+        os.environ["http_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
+        os.environ["https_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
+        os.environ["HTTP_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
+        os.environ["HTTPS_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
+        dataset = load_dataset(path)
+
+        def pre_process(example):
+            prompt = example["prompt"]
+
+            start_index = prompt.find('"""')
+            if start_index != -1:
+                # 找到下一个连续三个双引号的位置
+                end_index = prompt.find('"""', start_index + 3)
+
+                if end_index != -1:
+                    # 抽取出包含在连续三个双引号之间的部分
+                    input = prompt[start_index + 3:end_index]
+                    example["input"] = input
+                else:
+                    print("未找到第二个连续三个双引号")
+            else:
+                start_index = prompt.find("'''")
+
+                if start_index != -1:
+                    # 找到下一个连续三个单引号的位置
+                    end_index = prompt.find("'''", start_index + 3)
+
+                    if end_index != -1:
+                        # 抽取出包含在连续三个单引号之间的部分
+                        input = prompt[start_index + 3:end_index]
+                        example["input"] = input
+                    else:
+                        print("未找到第二个连续三个单引号")
+                else:
+                    print("未找到第一个连续三个单引号")
+
+            return example
+
+        dataset = dataset.map(pre_process)
+        return dataset
 
 @ICL_EVALUATORS.register_module()
 class HumanEvaluator(BaseEvaluator):

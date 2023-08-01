@@ -101,35 +101,35 @@ for _name in agieval_single_choice_sets:
             infer_cfg=agieval_infer_cfg.copy(),
             eval_cfg=agieval_eval_cfg.copy()))
 
-for _name in agieval_multiple_choices_sets:
-    if _name in agieval_chinese_sets:
-        _hint = '答案是： '
-    else:
-        _hint = 'The answer is '
-    agieval_infer_cfg = dict(
-        prompt_template=dict(
-            type=PromptTemplate,
-            template=dict(round=[
-                dict(role='HUMAN', prompt=f'{{question}}\n{{options}}\n{_hint}')
-            ])),
-        retriever=dict(type=ZeroRetriever),
-        inferencer=dict(type=GenInferencer, max_out_len=1024))
-
-    agieval_eval_cfg = dict(
-        evaluator=dict(type=AccEvaluator),
-        pred_postprocessor=dict(type=first_capital_postprocess_multi))
-
-    agieval_datasets.append(
-        dict(
-            type=AGIEvalDataset_v2,
-            path='./data/AGIEval/data/v1/',
-            name=_name,
-            abbr='agieval-' + _name,
-            setting_name='zero-shot',
-            reader_cfg=dict(
-                input_columns=['question', 'options'], output_column='label'),
-            infer_cfg=agieval_infer_cfg.copy(),
-            eval_cfg=agieval_eval_cfg.copy()))
+# for _name in agieval_multiple_choices_sets:
+#     if _name in agieval_chinese_sets:
+#         _hint = '答案是： '
+#     else:
+#         _hint = 'The answer is '
+#     agieval_infer_cfg = dict(
+#         prompt_template=dict(
+#             type=PromptTemplate,
+#             template=dict(round=[
+#                 dict(role='HUMAN', prompt=f'{{question}}\n{{options}}\n{_hint}')
+#             ])),
+#         retriever=dict(type=ZeroRetriever),
+#         inferencer=dict(type=GenInferencer, max_out_len=1024))
+#
+#     agieval_eval_cfg = dict(
+#         evaluator=dict(type=AccEvaluator),
+#         pred_postprocessor=dict(type=first_capital_postprocess_multi))
+#
+#     agieval_datasets.append(
+#         dict(
+#             type=AGIEvalDataset_v2,
+#             path='./data/AGIEval/data/v1/',
+#             name=_name,
+#             abbr='agieval-' + _name,
+#             setting_name='zero-shot',
+#             reader_cfg=dict(
+#                 input_columns=['question', 'options'], output_column='label'),
+#             infer_cfg=agieval_infer_cfg.copy(),
+#             eval_cfg=agieval_eval_cfg.copy()))
 
 for _name in agieval_cloze_sets:
     if _name in agieval_chinese_sets:

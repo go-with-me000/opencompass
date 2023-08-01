@@ -4,10 +4,9 @@ from opencompass.models import HuggingFaceCausalLM
 models = [
     dict(
         type=HuggingFaceCausalLM,
-        abbr='llama-2-7b-hf',
-        # path="meta-llama/Llama-2-7b-hf",
-        # tokenizer_path='meta-llama/Llama-2-7b-hf',
-        path="/mnt/petrelfs/chenkeyu1/models/llama2/Llama-2-7b-hf",
+        abbr='llama-2-70b-hf',
+        path="meta-llama/Llama-2-70b-hf",
+        tokenizer_path='meta-llama/Llama-2-70b-hf',
         tokenizer_kwargs=dict(padding_side='left',
                               truncation_side='left',
                               use_fast=False,
@@ -17,6 +16,6 @@ models = [
         batch_size=8,
         model_kwargs=dict(device_map='auto'),
         batch_padding=False, # if false, inference with for-loop without batch padding
-        run_cfg=dict(num_gpus=1, num_procs=1),
+        run_cfg=dict(num_gpus=8, num_procs=1),
     )
 ]
