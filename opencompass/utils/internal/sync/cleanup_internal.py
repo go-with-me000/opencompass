@@ -5,7 +5,7 @@ import subprocess
 
 def clean(script):
     # Remove blocks between # INTERNAL_BEGIN and # INTERNAL_END
-    pattern_blocks = r'# INTERNAL_BEGIN.*?# INTERNAL_END.*?\n'
+    pattern_blocks = r'[ \t]*?# INTERNAL_BEGIN.*?# INTERNAL_END.*?\n'
     cleaned_script = re.sub(pattern_blocks, '', script, flags=re.DOTALL)
 
     # Uncomment blocks between # EXTERNAL_BEGIN and # EXTERNAL_END

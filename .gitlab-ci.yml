@@ -15,7 +15,7 @@ before_script:
 
 lint:       # This job runs in the build stage, which runs first.
   stage: prepare
-  image: python:3.10.0
+  image: 'gaotongxiao/lint:0.1.0'  # This image is built from python:3.10 with pre-commit hooks installed
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
@@ -23,8 +23,6 @@ lint:       # This job runs in the build stage, which runs first.
   tags:
     - opencompass
   script:
-    - pip install pre-commit
-    - pre-commit install -c .pre-commit-config-zh-cn.yaml
     - pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 pull_github:       # This job runs in the build stage, which runs first.
@@ -52,7 +50,7 @@ pull_github:       # This job runs in the build stage, which runs first.
 
 process_branch:
   stage: process
-  image: python:3.10.0
+  image: 'gaotongxiao/lint:0.1.0'  # This image is built from python:3.10 with pre-commit hooks installed
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
@@ -67,6 +65,7 @@ process_branch:
     - AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
     - AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')
     - COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+    - pre-commit install -c .pre-commit-config-zh-cn.yaml
 
     # change its working path to bypass some annoying python import issues
     # tmp/ won't be tracked by git
@@ -85,8 +84,7 @@ process_branch:
 
     - git merge $INTERNAL_BRANCH --no-edit || { python tmp/lark.py $LARK_URL "Please rebase it on the latest $INTERNAL_BRANCH locally and push again." --title "$CI_COMMIT_REF_NAME - Rebase failed. "; exit 1; }
     - python opencompass/utils/internal/sync/cleanup_internal.py
-    - git add .
-    - git commit -m "$COMMIT_MESSAGE"
+    - (git add . && git commit -m "$COMMIT_MESSAGE") || (git add . && git commit -m "$COMMIT_MESSAGE")  # in case of linting error
 
     - git diff github > changes.patch
     - |
@@ -97,8 +95,7 @@ process_branch:
     - git checkout github -b github_$CI_COMMIT_REF_NAME
     - git apply changes.patch || exit
     - rm changes.patch
-    - git add .
-    - git commit -m "$COMMIT_MESSAGE"
+    - (git add . && git commit -m "$COMMIT_MESSAGE") || (git add . && git commit -m "$COMMIT_MESSAGE")  # in case of linting error
 
     - git remote set-url origin https://oauth2:$GIT_ACCESS_TOKEN@gitlab.pjlab.org.cn/openmmlab/bigmodel/opencompass.git
     - git push origin github_$CI_COMMIT_REF_NAME -f
