@@ -1,83 +1,56 @@
-# OpenCompass
+# OpenCompass 内部版极速上手
 
-## Installation
+## 安装
 
-1. Prepare Torch refer to [PyTorch](https://pytorch.org/).
+1. 准备 OpenCompass 运行环境并安装：
 
-Notice that OpenCompass requires `pytorch>=1.13`.
+   ```bash
+   conda create --name opencompass python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
+   conda activate opencompass
+   git clone ssh://git@gitlab.pjlab.org.cn:1122/openmmlab/bigmodel/opencompass.git
+   cd opencompass
+   pip install -e .
+   ```
 
-```bash
-conda create --name opencompass python=3.8 -y
-conda activate opencompass
-conda install pytorch torchvision -c pytorch
-```
+2. 安装 humaneval（可选）：
 
-2. Install OpenCompass:
+   如果你需要**在 humaneval 数据集上评估模型代码能力**，请执行此步骤，否则忽略这一步。
 
-```bash
-git clone https://github.com/opencompass/opencompass
-cd opencompass
-pip install -r requirements/runtime.txt
-pip install -e .
-```
+   <details>
+   <summary><b>点击查看详细</b></summary>
 
-3. Install Llama (option)
+   ```bash
+   git clone https://github.com/openai/human-eval.git
+   cd human-eval
+   pip install -r requirements.txt
+   pip install -e .
+   cd ..
+   ```
 
-install llama if you want to eval llama models.
+   请仔细阅读 `human_eval/execution.py` **第48-57行**的注释，了解执行模型生成的代码可能存在的风险，如果接受这些风险，请取消**第58行**的注释，启用代码执行评测。
 
-```
-git clone https://github.com/facebookresearch/llama
-pip install -r requirements.txt
-pip install 'flash_attn<1.0.0'
-pip install -e llama
-```
+   </details>
 
-Modify `llama/model.py` line 237 into `output = self.output(h[:, :, :])`
+3. 安装 Llama（可选）：
 
-if install `flash_attn` failed. try intsall it from score:
+   如果你需要**使用官方实现评测 Llama / Llama-2 / Llama-2-chat 模型**，请执行此步骤，否则忽略这一步。
 
-<details><summary>click to show the detail</summary>
+   <details>
+   <summary><b>点击查看详细</b></summary>
 
-```bash
-git clone -b v0.2.8 https://github.com/HazyResearch/flash-attention.git
-pip install -r requirements.txt
-pip install -e .
+   ```bash
+   git clone https://github.com/facebookresearch/llama.git
+   cd llama
+   pip install -r requirements.txt
+   pip install -e .
+   cd ..
+   ```
 
-# if you encount error:'No module named 'dropout_layer_norm' or the like
-# complie ops
-cd csrc/layer_norm && python setup.py install
-cd csrc/rotary && python setup.py install
-cd csrc/fused_dense_lib && python setup.py install
-```
+   你可以在 `configs/models` 下找到所有 Llama / Llama-2 / Llama-2-chat 模型的配置文件示例。([示例](https://github.com/InternLM/opencompass/blob/eb4822a94d624a4e16db03adeb7a59bbd10c2012/configs/models/llama2_7b_chat.py))
 
-</details>
+   </details>
 
-4. Install humaneval (option)
-
-do this if you want to eval on humaneval dataset.
-
-```
-git clone https://github.com/openai/human-eval.git
-cd human-eval
-pip install -r requirements.txt
-pip install -e .
-```
-
-Remember to remove the comments and uncomment [this line](https://github.com/openai/human-eval/blob/312c5e5532f0e0470bf47f77a6243e02a61da530/human_eval/execution.py#L58) in the source code.
-
-## Usage
-
-配置好 PetrelFS (`~/petreloss.conf`):
-
-```text
-[opennlplab_hdd]
-
-enable_mc = False
-boto = True
-host_base = http://10.140.2.204:80
-access_key = YOUR_ACCESS_KEY
-secret_key = YOUR_SECRET_KEY
-```
+## 配置
 
 将数据集下载或软链到 `./data` 处
 
@@ -87,10 +60,22 @@ ln -s /mnt/petrelfs/share_data/zhoufengzhe/llm_evaluation ./data
 # git clone ssh://git@gitlab.pjlab.org.cn:1122/openmmlab/bigmodel/llm-evaluation-datasets.git ./data
 ```
 
-最后运行命令进行全量测试。例如：
+如果需要访问 ceph 上的权重，需要联系对应分区管理员开通读取权限，并配置好 PetrelFS (`~/petreloss.conf`)。以下为示例配置:
 
-```bash
-python run.py configs/eval_demo.py -p llm_it
+```text
+[opennlplab_hdd]
+enable_mc = False
+boto = True
+host_base = http://10.140.2.204:80
+access_key = YOUR_ACCESS_KEY
+secret_key = YOUR_SECRET_KEY
+
+[model_weights]
+enable_mc = False
+boto = True
+host_base = http://10.140.2.254:80
+access_key = YOUR_ACCESS_KEY
+secret_key = YOUR_SECRET_KEY
 ```
 
 在后续的运行中，若能保证 huggingface 相关的代码均已被正确缓存，可使用以下环境变量，在不联网的机器上运行
@@ -99,168 +84,103 @@ python run.py configs/eval_demo.py -p llm_it
 export HF_DATASETS_OFFLINE=1; export TRANSFORMERS_OFFLINE=1; export HF_EVALUATE_OFFLINE=1;
 ```
 
-## 快速上手
+## 启动评测
 
-本工具基于 MMEngine 的配置文件，可以快速部署评估任务。
+在 OpenCompass 中进行评测，需要首先准备一份配置文件，再通过命令启动任务。
 
-程序入口为 `run.py`，使用方法如下：
+配置文件配置项相对较多，配置起来相对繁琐。为了方便使用，**建议各团队在迭代模型时，由负责人维护一份基础配置文件，配置好所需测试的数据集及模型，再分发给有测试需要的组员。而组员在迭代时则只需要更新 `models` 字段中的 `path`，`tokenizer_path` 及 `abbr` 字段，并运行命令即可启动测试，而无需关注其它配置细节。**
 
-```bash
-run.py [-p PARTITION] [-q QUOTATYPE] [--debug] [-m MODE] [-r [REUSE]] [-w WORKDIR] config
+本章以内部模型的测试为例，介绍如何使用 OpenCompass 进行评测。本文仅介绍关键的配置点及命令。建议**需要速成的组员**阅读。如果需要完全入门，建议参考社区版的[快速上手](docs/zh_cn/get_started.md#快速上手)。
+
+### 准备配置文件
+
+OpenCompass 使用 python 格式的配置文件，通常放在 `configs/` 目录下。运行时，我们只需要配置 `datasets` 及 `models` 字段，设置待测的模型及数据集。
+
+例如，下面配置将会测试 `PJLM-v0.2.0-Exam-v0.1.5` 在 winograd 和 siqa 上的表现：
+
+```python
+from mmengine.config import read_base
+from opencompass.models.internal import LLMv2
+
+with read_base():
+    from .datasets.winograd.winograd_ppl import winograd_datasets
+    from .datasets.siqa.siqa_gen import siqa_datasets
+
+datasets = [*siqa_datasets, *winograd_datasets]
+
+models = [
+    dict(
+        abbr='PJLM-v0.2.0-Exam-v0.1.5',  # 定义最后在报告中显示的模型名称
+        path='model_weights:s3://model_weights/0331/1006_pr/5499/',  # 模型的路径，允许是 ceph 路径
+        tokenizer_path=
+        '/mnt/petrelfs/share_data/yanhang/tokenizes/llamav4.model',  # 模型的 tokenizer 路径
+        type=LLMv2,
+        model_type='converted',
+        tokenizer_type='v4',
+        max_out_len=100,
+        max_seq_len=2048,
+        batch_size=8,
+        run_cfg=dict(num_gpus=8, num_procs=8)),  # 运行时所需的 gpu 及内存数，跑内部 LLM 时要求 num_gpus 和 num_procs 相同
+]
 ```
 
-参数解释如下：
+更多关于配置的介绍请阅读社区版本的 [快速上手](docs/zh_cn/get_started.md#快速上手)。
 
-- `-p` 指定 slurm 分区；
-- `-q` 指定 slurm quotatype （默认为 auto），可选 reserved, auto, spot；
-- `--debug` 开启时，推理和评测任务会以单进程模式运行，且输出会实时回显，便于调试；
-- `-m` 运行模式，默认为 `all`。可以指定为 `infer` 则仅运行推理，获得输出结果；如果在 `{WORKDIR}` 中已经有模型输出，则指定为 `eval` 仅运行评测，获得评测结果；如果在 `results` 中已有单项评测结果，则指定为 `viz` 仅运行可视化；指定为 `all` 则同时运行推理和评测。
-- `-r` 重用已有的推理结果。如果后面跟有时间戳，则会复用工作路径下该时间戳的结果；否则则复用指定工作路径下的最新结果。
-- `-w` 指定工作路径，默认为 `./outputs/default`
-- `-l` 打开飞书机器人状态上报。[详细文档](docs/zh_cn/tools.md#lark-bot)
+### 运行测试 （S 集群）
 
-整体运行流如下：
+假设上面配置文件已经保存为 `configs/eval.py`。
 
-1. 读取配置文件，解析出模型、数据集、评估器等配置信息
-2. 评测任务主要分为推理 `infer`、评测 `eval` 和可视化 `viz` 三个阶段，其中推理和评测经过 `Partitioner` 进行任务切分后，交由 `Runner` 负责并行执行。单个推理和评测任务则被抽象成 `OpenICLInferTask` 和 `OpenICLEvalTask`。
-3. 两阶段分别结束后，可视化阶段会读取 `results` 中的评测结果，生成可视化报告。
+在 S 集群管理机上运行以下命令，即可在 `llmeval` 分区上并行启动 32 个 `quotatype` 为 `auto` 的评测任务：
 
-实际运行时，你可以通过制定 -m 来指定运行模式。
+```bash
+python run.py configs/eval.py --slurm -p llmeval -q auto --max-num-workers 32
+```
 
-## 实用工具
+为了充分利用资源，OpenCompass 会将评测任务按计算量拆分为多个子任务，并按照用户指定的 `max-num-workers` 并行启动。每个任务资源占用取决于模型的配置，如本例，每个子任务会占用 8 个 GPU。
 
-见 [实用工具](docs/zh_cn/tools.md)。
+由于每个子任务在启动时都存在读取模型的开销，如果子任务太多，也会拖慢评测速度。因此，也建议灵活调整 `--max-partition-size` 参数，增大单个子任务的大小。（默认为2000）
+
+```bash
+python run.py configs/eval.py --slurm -p llmeval -q auto --max-num-workers 32 --max-partition-size 4000
+```
+
+另外，OpenCompass 默认使用并行的方式进行评测，不利于调试。为了便于及时发现问题，我们可以在首次启动时使用 debug 模式运行，该模式会将任务串行执行，并会实时输出任务的执行进度。
+
+```bash
+python run.py configs/eval.py --slurm -p llmeval -q auto --max-num-workers 32 --debug
+```
+
+如果一切正常，屏幕上会出现 "Starting inference process"：
+
+```bash
+[2023-07-12 18:23:55,076] [opencompass.openicl.icl_inferencer.icl_gen_inferencer] [INFO] Starting inference process...
+```
+
+此时可以使用 `ctrl+c` 中断 debug 模式的执行，重新进行并行评测。
+
+`run.py` 还支持在本机或阿里云上启动任务。更多介绍请参考 [评测任务发起](docs/zh_cn/user_guides/experimentation.md#评测任务发起)
+
+### 运行测试 （阿里云）
+
+在上述配置文件中添加以下行
+
+```python
+with read_base():
+    from .aliyun_env import llm_infer as infer, llm_eval as eval  # 使用不同的 workspace 需要 import 不同的配置
+```
+
+并按照 [该文档](https://aicarrier.feishu.cn/wiki/PzP6wL6d1is9mhkHY3Lc5TYVnJA) 配置 dlc 等工具。根据需要可能要修改 `configs/aliyun_env.py` 中的内容。
+
+其运行命令与 S 集群上相同，唯一差别在于不需要指定 `--slurm` 及相关参数如 `-p` `-q` 等
+
+```bash
+python run.py configs/eval.py --max-num-workers 32
+```
 
 ## 开发规范
 
-见 [文档](https://aicarrier.feishu.cn/wiki/wikcnocfGDlTixegjAgstKP476e)
-
-### 配置解释
-
-#### `infer`, `eval`
-
-分别配置推理和评测的配置，支持的参数如下：
-
-```python
-infer = dict(
-    partitioner=dict(type='SizePartitioner', max_task_size=2000),  # 任务切分策略，支持 SizePartitioner 和 NaivePartitioner。对于 SizePartitioner，可以使用 max_task_size 指定单个任务的最大长度，超过该长度的任务会被切分成多个子任务。
-    runner=dict(
-        type='SlurmRunner',  # 运行器，支持 SlurmRunner, LocalRunner 和 DLCRunner
-        max_num_workers=2,  # 最大并行评测任务数，建议不要太离谱
-        task=dict(type='OpenICLInferTask'),
-        retry=5),  # 任务失败后重试次数，防止如端口被占用等情况 block 评测
-)
-```
-
-阿里云的 `DLCRunner` 配置可以参考 `configs/aliyun_intern_benchmark_chat.py`。
-
-<!-- #### `evaluator`
-
-支持主观评测和客观评测的 Evaluator。目前，`ICLEvaluator` 用于客观评测，通过调用 OpenICL 得到评测结果。
-
-```python
-# max_num_workers 指开启多少个进程来进行评测
-evaluator = dict(type='ICLEvaluator', max_num_workers=16)
-``` -->
-
-#### Model
-
-`models` 是一个列表，每个元素是一个字典，包含了模型的配置信息。
-
-```python
-models = [
-    dict(type='LLM',  # Model Wrapper 类别， 支持 "LLM", "LLama", "OpenAI", 通常使用 LLM
-         path='/mnt/petrelfs/share_data/gaotong/llm/sft_7132k_moss/13999',  # 模型路径, 同样支持 ceph
-         max_out_len=100,  # 模型在生成任务中最大输出长度
-         max_seq_len=2048,  # 模型整体最大处理长度 （包括 prompt + 输出）
-         batch_size=16,  # 模型推理的 batch size
-         run_cfg=dict(num_gpus=2)),  # 模型推理所需的 GPU 数量
-]
-```
-
-此外，从 0.3.0 版本起，我们支持了与模型绑定的 meta prompt。[文档](docs/zh_cn/meta_prompt.md)
-
-#### Dataset
-
-`datasets` 是一个列表，每个元素是一个字典，包含了数据集的配置信息。
-为了便于管理，数据集的配置被放置于 `configs/datasets` 目录下，在主 config 文件中通过继承的方式引入。
-例如，我们需要引入 piqa 的数据集配置，可以在 `configs/eval.py` 中添加如下代码：
-
-```python
-_base_ = [
-    'datasets/piqa.py',
-]
-datasets = []
-datasets += _base_.piqa_datasets
-```
-
-约定 `_base_` 中的数据集配置变量名为 `{DATASET_NAME}_datasets`。以 piqa 为例，其数据集配置为：
-
-```python
-piqa_datasets = [
-    dict(type='HFDataset',  # 数据集类型，影响数据集加载方式。HFDataset 是基于 huggingface 的数据集加载方式，其他可选项见 opencompass/load_datasets.py
-         abbr='piqa', # 数据集简称，用于生成数据集路径
-         path='piqa', # 数据集路径，为 datasets.load_dataset 的必须参数
-         infer_cfg=piqa_infer_cfg, # 推理配置，见下文
-         eval_cfg=piqa_eval_cfg)  # 评估配置，见下文
-]
-```
-
-其中，`abbr`、`infer_cfg` 和 `eval_cfg` 是保留字段，他们用于指定模型输出的文件名、推理配置和评估配置；其他参数将会被传到 opencompass/load_datasets.py 中相应的数据集加载函数中。
-
-`eval_cfg`:
-
-指定了客观评测时的评估配置，包含了评估器的类型和数据集的划分。
-
-```python
-
-eval_cfg = dict(evaluator=dict(type='AccEvaluator'),  # OpenICL 中的评估器类型，可用类型见 opencompass/openicl/openicl/icl_evaluator/__init__.py
-                    ds_split='validation',  # 用于评测的数据集 split
-                    ds_column='label',  # 数据集中的标签列
-                    dataset_postprocessor=dict(type='general'),  # 数据集内容（str）的处理函数，评估分数前会先运行该函数
-                    pred_postprocessor=dict(type='general'),  # 预测结果（str）的处理函数，评估分数前会先运行该函数
-                    )
-```
-
-`infer_cfg`:
-
-这里指定的是推理配置，包含了数据集读取、ICE 模板 (k-shot 模板)、prompt 模板，检索器和推理器的配置。这里直接包裹的是 OpenICL 的推理流程，具体参数含义不再赘述。
-
-```python
-piqa_infer_cfg = dict(reader=dict(type='DatasetReader',
-                                  input_columns=['goal', 'sol1', 'sol2'],
-                                  output_column='label'),
-                      ice_template=dict(type='PromptTemplate',
-                                        template={
-                                            0: '</E>Q: </G>\nA: </S1>\n',
-                                            1: '</E>Q: </G>\nA: </S2>\n'
-                                        },
-                                        column_token_map={
-                                            'sol1': '</S1>',
-                                            'sol2': '</S2>',
-                                            'goal': '</G>'
-                                        },
-                                        ice_token='</E>'),
-                      prompt_template=dict(type='PromptTemplate',
-                                        template={
-                                            0: '</E>Q: </G>\nA: </S1>\n',
-                                            1: '</E>Q: </G>\nA: </S2>\n'
-                                        },
-                                        column_token_map={
-                                            'sol1': '</S1>',
-                                            'sol2': '</S2>',
-                                            'goal': '</G>'
-                                        },
-                                        ice_token='</E>'),
-                      retriever=dict(type='ZeroRetriever',
-                                     test_split='validation'),
-                      inferencer=dict(type='PPLInferencer'))
-```
+见 [飞书文档](https://aicarrier.feishu.cn/wiki/wikcnocfGDlTixegjAgstKP476e)
 
 ## FAQ
 
 1. 出现与 NCCL 相关的问题，初步可以尝试在运行的启动命令之前添加: `NCCL_SOCKET_IFNAME=eth0`
-
-## Acknowledgement
-
-This repository borrows part of the code from the [OpenICL](https://github.com/Shark-NLP/OpenICL) repository.
