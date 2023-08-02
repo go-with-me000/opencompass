@@ -5,8 +5,8 @@ from opencompass.runners import LocalRunner, SlurmRunner
 from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
-    # from .datasets.collections.C import datasets
-    from .datasets.collections.base_small import datasets
+    from .datasets.collections.C import datasets
+    # from .datasets.collections.base_small import datasets
     from .models.my_model import models
 
     from .summarizers.small import summarizer

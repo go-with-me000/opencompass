@@ -9,13 +9,13 @@ with read_base():
     # from .datasets.siqa.siqa_gen import siqa_datasets
     # from .datasets.nq.nq_gen_c788f6 import nq_datasets
     from .datasets.collections.C import datasets
-    from .models.hf_llama2_7b import models
-    # from .models.internlm_7b import models
-    from .summarizers.medium import summarizer
+    # from .models.hf_llama2_7b import models
+    from .models.internlm_7b import models
+    # from .summarizers.medium import summarizer
 
 
 
-work_dir = './outputs/2023_07_31/'
+work_dir = './outputs/2023_08_01/'
 infer = dict(
     partitioner=dict(type=SizePartitioner, max_task_size=5000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
