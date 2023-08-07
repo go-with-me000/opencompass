@@ -12,7 +12,13 @@
    pip install -e .
    ```
 
-2. 安装 humaneval（可选）：
+2. S 集群上安装 petrel oss sdk (可选)：
+
+   ```bash
+   pip install /mnt/petrelfs/share_data/zhangsongyang/softwares/petrel/petrel_oss_sdk-v2.2.1_2_g1505ef3_master-py3-none-any.whl
+   ```
+
+3. 安装 humaneval（可选）：
 
    如果你需要**在 humaneval 数据集上评估模型代码能力**，请执行此步骤，否则忽略这一步。
 
@@ -31,7 +37,7 @@
 
    </details>
 
-3. 安装 Llama（可选）：
+4. 安装 Llama（可选）：
 
    如果你需要**使用官方实现评测 Llama / Llama-2 / Llama-2-chat 模型**，请执行此步骤，否则忽略这一步。
 
@@ -55,9 +61,12 @@
 将数据集下载或软链到 `./data` 处
 
 ```bash
+# s 集群
 ln -s /mnt/petrelfs/share_data/zhoufengzhe/llm_evaluation ./data
+# 阿里云
+ln -s /cpfs01/shared/public/llm-evaluation-datasets/ ./data
 # 或者从 gitlab 上下载
-# git clone ssh://git@gitlab.pjlab.org.cn:1122/openmmlab/bigmodel/llm-evaluation-datasets.git ./data
+git clone ssh://git@gitlab.pjlab.org.cn:1122/openmmlab/bigmodel/llm-evaluation-datasets.git ./data
 ```
 
 如果需要访问 ceph 上的权重，需要联系对应分区管理员开通读取权限，并配置好 PetrelFS (`~/petreloss.conf`)。以下为示例配置:
