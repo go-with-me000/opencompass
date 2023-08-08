@@ -1,7 +1,8 @@
 import unittest
 
 from mmengine.config import ConfigDict
-from pjeval.partitioners.size import SizePartitioner
+
+from opencompass.partitioners.size import SizePartitioner
 
 
 class TestSizePartitioner(unittest.TestCase):
