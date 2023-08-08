@@ -3,6 +3,7 @@ it to another branch.
 
 """
 import argparse
+import subprocess
 import fnmatch
 import os
 
@@ -71,9 +72,22 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
             try:
                 repo.git.am(patch_file)
             except Exception as e:
-                status = f'Error applying patch for commit {commit.hexsha}. Exiting...'
-                status += '\n' + str(e)
-                break
+                cmd = [
+                'git', 'apply', patch_file, '--3way', '--check'
+                ]
+                result = subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True)
+                if result.returncode == 0:
+                    cmd = [
+                    'git', 'am', '--abort'
+                    ]
+                    subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True)
+                    continue
+                else:
+                    status += '\n' + str(result.stdout)
+                    status += '\n' + str(result.stderr)
+                    status = f'Error applying patch for commit {commit.hexsha}. Exiting...'
+                    status += '\n' + str(e)
+                    break
             os.remove(patch_file)
         if status != 0:
             break
@@ -93,7 +107,6 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
     else:
         print(status)
         lark.post(title='Gitlab 版本同步 Github 失败', content=f'同步至 {commit.hexsha}\n {commit.message}')
-        exit(-1)
 
 if __name__ == '__main__':
     args = parse_args()
