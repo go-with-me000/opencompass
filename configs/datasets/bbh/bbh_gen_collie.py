@@ -21,11 +21,21 @@ bbh_reader_cfg = dict(input_columns=["input"], output_column="target")
 bbh_datasets = []
 for _name in bbh_multiple_choice_sets:
     _hint = open(f"{_path_prefix}/lib_prompt/{_name}.txt", 'r').read()
+    lines = _hint.splitlines()
+    question = lines[0].strip()
+    question = question.replace("Task description: ","")
+    hint = f"{bbh_hint}### Instruction:\n{question}\n\n### Input:"
+    _hint = _hint.replace(question + '\n', "")
+    _hint = _hint.replace("Q:", hint)
+    _hint = _hint.replace("A: Let's think step by step.", "\n### Response: Let's think step by step.")
+    _hint = _hint.replace("Task description: ","")
+    _hint = _hint.strip()
+    _hint = _hint+"\n\n"
     bbh_infer_cfg = dict(
         prompt_template=dict(
             type=PromptTemplate,
             # template=dict(round=[dict(role="HUMAN", prompt=f"Follow the given examples and answer the question.\n{_hint}\n\nQ: </input>\nA: Let's think step by step.")]),
-            template=f"{bbh_hint}### Instruction:\nFollow the given examples and answer the question.\n{_hint}\n\n### Input:\n{{input}}\n\n### Response:"
+            template=f"{_hint}{bbh_hint}### Instruction:\n{question}\n\n### Input:\n{{input}}\n\n### Response: Let's think step by step.\n"
         ),
         retriever=dict(type=ZeroRetriever),
         inferencer=dict(type=GenInferencer, max_out_len=512)
@@ -49,18 +59,31 @@ for _name in bbh_free_form_sets:
     _hint = None
     if exists(f"{_path_prefix}/lib_prompt/{_name}.txt"):
         _hint = open(f"{_path_prefix}/lib_prompt/{_name}.txt", 'r').read()
-    bbh_infer_cfg = dict(
-        prompt_template=dict(
-            type=PromptTemplate,
-            template=dict(round=[
-                dict(
-                    role="HUMAN",
-                    prompt=
-                    f"{bbh_hint}### Instruction:\nFollow the given examples and answer the question.\n{_hint}\n\n### Input:\n{{input}}\n\n### Response:"
-                )
-            ])),
-        retriever=dict(type=ZeroRetriever),
-        inferencer=dict(type=GenInferencer, max_out_len=512))
+        lines = _hint.splitlines()
+        question = lines[0].strip()
+        question = question.replace("Task description: ", "")
+        hint = f"{bbh_hint}### Instruction:\n{question}\n\n### Input:"
+        _hint = _hint.replace(question + '\n', "")
+        _hint = _hint.replace("Q:", hint)
+        _hint = _hint.replace("A: Let's think step by step.", "\n### Response: Let's think step by step.")
+        _hint = _hint.replace("Task description: ", "")
+        _hint = _hint.strip()
+        _hint = _hint + "\n\n"
+        bbh_infer_cfg = dict(
+            prompt_template=dict(
+                type=PromptTemplate,
+                template=f"{_hint}{bbh_hint}### Instruction:\n{question}\n\n### Input:\n{{input}}\n\n### Response: Let's think step by step.\n"
+            ),
+            retriever=dict(type=ZeroRetriever),
+            inferencer=dict(type=GenInferencer, max_out_len=512))
+    else:
+        bbh_infer_cfg = dict(
+            prompt_template=dict(
+                type=PromptTemplate,
+                template=f"{bbh_hint}### Instruction:\n{{input}}\n\n### Response: Let's think step by step.\n"
+            ),
+            retriever=dict(type=ZeroRetriever),
+            inferencer=dict(type=GenInferencer, max_out_len=512))
     bbh_eval_cfg = dict(evaluator=dict(type=BBHEvaluator), pred_role="BOT")
 
     bbh_datasets.append(

@@ -75,15 +75,15 @@ mmlu_hint = "Below is an instruction that describes a task, paired with an input
 
 mmlu_datasets = []
 for _name in mmlu_all_sets:
-    _hint = f'The following are multiple choice questions (with answers) about  {_name.replace("_", " ")}.\n\n'
+    _hint = f'The following are multiple choice questions (with answers) about {_name.replace("_", " ")}. You need to answer the question by selecting the correct option.\n\n'
     mmlu_infer_cfg = dict(
         ice_template=dict(
             type=PromptTemplate,
-            template=f"### Input:\n{{input}}\nA. {{A}}\nB. {{B}}\nC. {{C}}\nD. {{D}}\n\n### Response: {{target}}\n\n",
+            template=f"{mmlu_hint}### Instruction:\n{_hint}### Input:\n{{input}}\nA. {{A}}\nB. {{B}}\nC. {{C}}\nD. {{D}}\n\n### Response: {{target}}\n",
         ),
         prompt_template=dict(
             type=PromptTemplate,
-            template=f"{mmlu_hint}</E>### Instruction:\n{_hint}\n\n### Input:\n{{input}}\nA. {{A}}\nB. {{B}}\nC. {{C}}\nD. {{D}}\n\n### Response:",
+            template=f"</E>{mmlu_hint}### Instruction:\n{_hint}### Input:\n{{input}}\nA. {{A}}\nB. {{B}}\nC. {{C}}\nD. {{D}}\n\n### Response:",
             ice_token="</E>",
         ),
         retriever=dict(type=FixKRetriever),

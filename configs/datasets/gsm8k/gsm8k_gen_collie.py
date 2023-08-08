@@ -6,14 +6,14 @@ from opencompass.openicl.icl_evaluator import AccEvaluator
 from opencompass.datasets import HFDataset, gsm8k_postprocess, gsm8k_dataset_postprocess
 
 gsm8k_hint = "Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n"
+gsm8k_instruction = "Given a problem scenario with numerical data, perform the necessary calculations and provide a detailed step-by-step solution, ending the response with 'The answer is'."
 gsm8k_reader_cfg = dict(input_columns=['question'], output_column='answer')
 gsm8k_infer_cfg = dict(
     prompt_template=dict(
         type=PromptTemplate,
-        template=f'''{gsm8k_hint}### Instruction:\nAngelo and Melanie want to plan how many hours over the next week they should study together for their test next week. They have 2 chapters of their textbook to study and 4 worksheets to memorize. They figure out that they should dedicate 3 hours to each chapter of their textbook and 1.5 hours for each worksheet. If they plan to study no more than 4 hours each day, how many days should they plan to study total over the next week if they take a 10-minute break every hour, include 3 10-minute snack breaks each day, and 30 minutes for lunch each day?
-Let's think step by step
+        template=f'''{gsm8k_hint}### Instruction:\n{gsm8k_instruction}\n\n### Input:\nAngelo and Melanie want to plan how many hours over the next week they should study together for their test next week. They have 2 chapters of their textbook to study and 4 worksheets to memorize. They figure out that they should dedicate 3 hours to each chapter of their textbook and 1.5 hours for each worksheet. If they plan to study no more than 4 hours each day, how many days should they plan to study total over the next week if they take a 10-minute break every hour, include 3 10-minute snack breaks each day, and 30 minutes for lunch each day?
 \n### Response:
-Angelo and Melanie think they should dedicate 3 hours to each of the 2 chapters, 3 hours x 2 chapters = 6 hours total.
+Let's think step by step. Angelo and Melanie think they should dedicate 3 hours to each of the 2 chapters, 3 hours x 2 chapters = 6 hours total.
 For the worksheets they plan to dedicate 1.5 hours for each worksheet, 1.5 hours x 4 worksheets = 6 hours total.
 Angelo and Melanie need to start with planning 12 hours to study, at 4 hours a day, 12 / 4 = 3 days.
 However, they need to include time for breaks and lunch. Every hour they want to include a 10-minute break, so 12 total hours x 10 minutes = 120 extra minutes for breaks.
@@ -24,10 +24,9 @@ They want to study no more than 4 hours each day, 15 hours / 4 hours each day = 
 They will need to plan to study 4 days to allow for all the time they need.
 The answer is 4
 
-### Instruction:\nMark's basketball team scores 25 2 pointers, 8 3 pointers and 10 free throws.  Their opponents score double the 2 pointers but half the 3 pointers and free throws.  What's the total number of points scored by both teams added together?
-Let's think step by step
+{gsm8k_hint}### Instruction:\n{gsm8k_instruction}\n\n### Input:\nMark's basketball team scores 25 2 pointers, 8 3 pointers and 10 free throws. Their opponents score double the 2 pointers but half the 3 pointers and free throws.  What's the total number of points scored by both teams added together?
 \n### Response:
-Mark's team scores 25 2 pointers, meaning they scored 25*2= 50 points in 2 pointers.
+Let's think step by step. Mark's team scores 25 2 pointers, meaning they scored 25*2= 50 points in 2 pointers.
 His team also scores 6 3 pointers, meaning they scored 8*3= 24 points in 3 pointers
 They scored 10 free throws, and free throws count as one point so they scored 10*1=10 points in free throws.
 All together his team scored 50+24+10= 84 points
@@ -38,10 +37,9 @@ All together Mark's opponents scored 100+12+5=117 points
 The total score for the game is both team's scores added together, so it is 84+117=201 points
 The answer is 201
 
-### Instruction:\nBella has two times as many marbles as frisbees. She also has 20 more frisbees than deck cards. If she buys 2/5 times more of each item, what would be the total number of the items she will have if she currently has 60 marbles?
-Let's think step by step
+{gsm8k_hint}### Instruction:\n{gsm8k_instruction}\n\n### Input:\nBella has two times as many marbles as frisbees. She also has 20 more frisbees than deck cards. If she buys 2/5 times more of each item, what would be the total number of the items she will have if she currently has 60 marbles?
 \n### Response:
-When Bella buys 2/5 times more marbles, she'll have increased the number of marbles by 2/5*60 = 24
+Let's think step by step. When Bella buys 2/5 times more marbles, she'll have increased the number of marbles by 2/5*60 = 24
 The total number of marbles she'll have is 60+24 = 84
 If Bella currently has 60 marbles, and she has two times as many marbles as frisbees, she has 60/2 = 30 frisbees.
 If Bella buys 2/5 times more frisbees, she'll have 2/5*30 = 12 more frisbees.
@@ -52,10 +50,9 @@ The total number of deck cards she'll have is 10+4 = 14
 Together, Bella will have a total of 14+42+84 = 140 items
 The answer is 140
 
-### Instruction:\nA group of 4 fruit baskets contains 9 apples, 15 oranges, and 14 bananas in the first three baskets and 2 less of each fruit in the fourth basket. How many fruits are there?
-Let's think step by step
+{gsm8k_hint}### Instruction:\n{gsm8k_instruction}\n\n### Input:\nA group of 4 fruit baskets contains 9 apples, 15 oranges, and 14 bananas in the first three baskets and 2 less of each fruit in the fourth basket. How many fruits are there?
 \n### Response:
-For the first three baskets, the number of apples and oranges in one basket is 9+15=24
+Let's think step by step. For the first three baskets, the number of apples and oranges in one basket is 9+15=24
 In total, together with bananas, the number of fruits in one basket is 24+14=38 for the first three baskets.
 Since there are three baskets each having 38 fruits, there are 3*38=114 fruits in the first three baskets.
 The number of apples in the fourth basket is 9-2=7
@@ -66,8 +63,8 @@ In total, the fourth basket has 20+12=32 fruits.
 The four baskets together have 32+114=146 fruits.
 The answer is 146
 
-### Instruction:\n{{question}}\n\n### Response:
-'''),
+{gsm8k_hint}### Instruction:\n{gsm8k_instruction}\n\n### Input:\n{{question}}\n\n### Response:
+Let's think step by step.'''),
     retriever=dict(type=ZeroRetriever),
     inferencer=dict(type=GenInferencer, max_out_len=512))
 

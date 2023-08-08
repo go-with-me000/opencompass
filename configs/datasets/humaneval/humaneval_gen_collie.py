@@ -11,7 +11,7 @@ humaneval_reader_cfg = dict(
     input_columns=['prompt','input'], output_column='task_id', train_split='test')
 humaneval_infer_cfg = dict(prompt_template=dict(
                                type=PromptTemplate,
-                               template=f'{humaneval_hint}### Instruction:\nComplete the following python code.### Input:\n{{input}}\n\n### Response:{{prompt}}',
+                               template=f'{humaneval_hint}### Instruction:\nComplete the following python code.\n\n### Input:\n{{input}}\n\n### Response:\n{{prompt}}',
                                # template='</E></prompt>',
                                ),
                            retriever=dict(type=ZeroRetriever),
