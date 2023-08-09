@@ -2,28 +2,22 @@ import os
 from alpaca_farm.auto_annotations import alpaca_leaderboard
 import csv
 from datasets import load_dataset
-import datasets
-os.environ["http_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
-os.environ["https_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
-os.environ["HTTP_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
-os.environ["HTTPS_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
+import json
 dataset = load_dataset(path="tatsu-lab/alpaca_farm",name="alpaca_farm_evaluation")["eval"]
 instructions = dataset["instruction"]
 inputs = dataset["input"]
 outputs = []
-import json
-output_root = "/mnt/petrelfs/chenkeyu1/alapaca_farm_results/output/output-now2.csv"
+output_path = "/mnt/petrelfs/chenkeyu1/alapaca_farm_results/output/output-now2.csv"
 root_path = "/mnt/petrelfs/chenkeyu1/alapaca_farm_results/now/"
 subdirectories = [entry for entry in os.listdir(root_path) if os.path.isdir(os.path.join(root_path, entry))]
 
-with open(output_root, "a", newline="") as csvfile:
-    fieldnames = ["name", "score"]  # 根据需要添加更多的列名
+with open(output_path, "a", newline="") as csvfile:
+    fieldnames = ["name", "score"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     for subdir in subdirectories:
         subdir_path = os.path.join(root_path, subdir)
         name1 = "/alpaca_no_input.json"
         name2 = "/alpaca_with_input.json"
-        # 读取file1.json
         print(subdir_path)
         data1 = None
         data2=None
@@ -31,7 +25,6 @@ with open(output_root, "a", newline="") as csvfile:
         with open(subdir_path+name1, 'r') as file1:
             data1 = json.load(file1)
 
-        # 读取file2.json
         with open(subdir_path+name2, 'r') as file2:
             data2 = json.load(file2)
 

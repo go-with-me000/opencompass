@@ -15,7 +15,7 @@ alpaca_farm_infer_cfg = dict(
 
 alpaca_farm_eval_cfg = dict(evaluator=dict(type=alpacaEvaluator))
 
-alpaca_farm_datasets = [
+alpaca_farm_no_input_datasets = [
     dict(
         abbr="alpaca_no_input",
         type=AlpaceFarmDataset_no_input,

@@ -11,7 +11,7 @@ with read_base():
     # from .summarizers.medium import summarizer
 
 
-work_dir = './outputs/2023_08_06/'
+work_dir = './outputs/evaluation/'
 
 infer = dict(
     partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=10),
