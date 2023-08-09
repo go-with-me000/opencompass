@@ -19,7 +19,10 @@ bustm_infer_cfg = dict(
     retriever=dict(type=ZeroRetriever),
     inferencer=dict(type=PPLInferencer))
 
-bustm_eval_cfg = dict(evaluator=dict(type=AccEvaluator))
+bustm_eval_cfg = dict(
+    evaluator=dict(type=AccEvaluator),
+    # mode="BPB"
+)
 
 bustm_datasets = [
     dict(

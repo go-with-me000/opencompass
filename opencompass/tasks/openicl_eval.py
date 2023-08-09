@@ -8,6 +8,8 @@ import mmengine
 from mmengine.config import Config, ConfigDict
 from mmengine.utils import mkdir_or_exist
 
+from opencompass.openicl.icl_inferencer.icl_base_inferencer import \
+    dump_results_dict
 from opencompass.registry import (ICL_EVALUATORS, MODELS, TASKS,
                                   TEXT_POSTPROCESSORS)
 from opencompass.tasks.base import BaseTask
@@ -87,9 +89,7 @@ class OpenICLEvalTask(BaseTask):
         else:
             if osp.exists(osp.realpath(filename)):
                 preds = mmengine.load(filename)
-                pred_strs = [
-                    preds[str(i)]['prediction'] for i in range(len(preds))
-                ]
+                pred_strs = [preds[str(i)] for i in range(len(preds))]
             else:
                 filename = partial_filename
                 pred_strs = []
@@ -98,9 +98,7 @@ class OpenICLEvalTask(BaseTask):
                     preds = mmengine.load(filename)
                     filename = root + f'_{i}' + ext
                     i += 1
-                    pred_strs += [
-                        preds[str(i)]['prediction'] for i in range(len(preds))
-                    ]
+                    pred_strs += [preds[str(i)] for i in range(len(preds))]
 
             if ('pred_role' in self.eval_cfg
                     and 'meta_template' in self.model_cfg
@@ -141,7 +139,9 @@ class OpenICLEvalTask(BaseTask):
 
             icl_evaluator = ICL_EVALUATORS.build(self.eval_cfg['evaluator'])
             result = icl_evaluator.score(
-                predictions=pred_strs, references=test_set[self.output_column])
+                pred_dicts=pred_strs,
+                references=test_set[self.output_column],
+                mode=self.eval_cfg.get('mode', 'PPL'))
 
         if 'error' in result:
             self.logger.error(
@@ -154,7 +154,8 @@ class OpenICLEvalTask(BaseTask):
         out_path = get_infer_output_path(self.model_cfg, self.dataset_cfg,
                                          osp.join(self.work_dir, 'results'))
         mkdir_or_exist(osp.split(out_path)[0])
-        mmengine.dump(result, out_path)
+        dump_results_dict(result, out_path)
+        # mmengine.dump(result, out_path)
 
     def _extract_role_pred(self, s: str, begin_str: Optional[str],
                            end_str: Optional[str]) -> str:

@@ -41,7 +41,7 @@ class ModelEvaluator:
         for partial_scores in all_partial_scores:
             for model_idx, score in partial_scores.items():
                 model_scores[self.model_abbrs[model_idx]] += score
-        print(model_scores)
+        # print(model_scores)
 
     def _load_dataset(self, dataset_abbr: str):
         # for self.

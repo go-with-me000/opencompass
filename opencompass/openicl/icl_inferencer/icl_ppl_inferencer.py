@@ -1,5 +1,6 @@
 """PPL Inferencer."""
 
+import math
 import os
 from typing import List, Optional
 
@@ -22,15 +23,15 @@ class PPLInferencer(BaseInferencer):
     """PPL Inferencer class to evaluate by perplexity.
 
     Attributes:
-        model (:obj:`BaseModel`, optional): The module to inference.
-        max_seq_len (:obj:`int`): Maximum number of tokenized words allowed by
-            the LM.
-        batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`
-        output_json_filepath (:obj:`str`, optional): File path for output
-            `JSON` file.
-        output_json_filename (:obj:`str`, optional): File name for output
-            `JSON` file.
-        labels (:obj:`List`, optional): A list of labels for all classes.
+            model (:obj:`BaseModel`, optional): The module to inference.
+            max_seq_len (:obj:`int`): Maximum number of tokenized words allowed by
+                    the LM.
+            batch_size (:obj:`int`, optional): Batch size for the :obj:`DataLoader`.
+            output_json_filepath (:obj:`str`, optional): File path for output
+                    `JSON` file.
+            output_json_filename (:obj:`str`, optional): File name for output
+                    `JSON` file.
+            labels (:obj:`List`, optional): A list of labels for all classes.
     """
 
     def __init__(
@@ -55,17 +56,16 @@ class PPLInferencer(BaseInferencer):
         self.labels = labels
         self.fix_id_list = fix_id_list
 
-    def inference(self,
-                  retriever: BaseRetriever,
-                  ice_template: Optional[PromptTemplate] = None,
-                  prompt_template: Optional[PromptTemplate] = None,
-                  output_json_filepath: Optional[str] = None,
-                  output_json_filename: Optional[str] = None,
-                  normalizing_str: Optional[str] = None) -> List:
+    def _inference(self,
+                   retriever: BaseRetriever,
+                   ice_template: Optional[PromptTemplate] = None,
+                   prompt_template: Optional[PromptTemplate] = None,
+                   output_json_filepath: Optional[str] = None,
+                   output_json_filename: Optional[str] = None,
+                   normalizing_str: Optional[str] = None):
         # 1. Preparation for output logs
         output_handler = PPLInferencerOutputHandler()
 
-        sub_predictions = []
         ppl = []
         ice = []
 
@@ -98,6 +98,7 @@ class PPLInferencer(BaseInferencer):
         for label in labels:
             index = 0
             prompt_list = []
+            token_num_list = []
             sub_ppl_list = []
             normalizing_prompt_list = []
             context_length_list = []
@@ -126,12 +127,12 @@ class PPLInferencer(BaseInferencer):
                             label,
                             ice_template=ice_template,
                             prompt_template=prompt_template)
-                        prompt_token_num = self.model.get_token_len_from_template(  # noqa
+                        prompt_token_num = self.model.get_token_len_from_template(
                             prompt, mode='ppl')  # noqa
 
                 if normalizing_str is not None:
                     assert isinstance(prompt, str), \
-                         'Prompt must be a string when normalizing_str is set.'
+                        'Prompt must be a string when normalizing_str is set.'
                     prompt_sep = prompt
                     if prompt_template is not None:
                         sep_token = prompt_template.sep_token
@@ -149,6 +150,7 @@ class PPLInferencer(BaseInferencer):
                                                                mode='ppl'))
                     normalizing_prompt_list.append(normalizing_prompt)
                 prompt_list.append(prompt)
+                token_num_list.append(prompt_token_num)
 
             if normalizing_str is not None:
                 normalizing_str_len = self.model.get_token_len_from_template(
@@ -191,8 +193,26 @@ class PPLInferencer(BaseInferencer):
                     ice_str = self.model.parse_template(ice[idx], mode='ppl')
                     output_handler.save_prompt_and_ppl(
                         label, prompt.replace(ice_str, ''), prompt, res, index)
+                    output_handler.results_dict[str(
+                        index)][f'label: {str(label)}']['BPB'] = math.exp(
+                            res * token_num_list[idx] /
+                            len(prompt.replace(ice_str, '').encode()))
+
                     index = index + 1
             ppl.append(sub_ppl_list)
+
+        # # 6. Get lowest PPL class as predictions
+        # ppl = list(zip(*ppl))
+        # for single_ppl in ppl:
+        #          sub_predictions.append(labels[single_ppl.index(min(single_ppl))])
+        # output_handler.save_predictions(sub_predictions)
+
+        return output_handler, ppl, labels
+
+    def inference(self, *args, **kwargs) -> List:
+        # print(kwargs)
+        sub_predictions = []
+        output_handler, ppl, labels = self._inference(*args, **kwargs)
 
         # 6. Get lowest PPL class as predictions
         ppl = list(zip(*ppl))
@@ -202,9 +222,93 @@ class PPLInferencer(BaseInferencer):
 
         # 7. Output
         if self.is_main_process:
-            os.makedirs(output_json_filepath, exist_ok=True)
-            output_handler.write_to_json(output_json_filepath,
-                                         output_json_filename)
+            os.makedirs(kwargs['output_json_filepath'], exist_ok=True)
+            output_handler.write_to_json(kwargs['output_json_filepath'],
+                                         kwargs['output_json_filename'])
+
+        return [
+            sample['prediction']
+            for sample in output_handler.results_dict.values()
+        ]
+
+
+@ICL_INFERENCERS.register_module()
+class RePPLInferencer(PPLInferencer):
+
+    def inference(self, *args, **kwargs) -> List:
+        # print(kwargs)
+        sub_predictions = []
+        output_handler, ppl, _ = self._inference(*args, **kwargs)
+
+        # 6. Get lowest PPL class as predictions
+        ppl = list(zip(*ppl))
+        for single_ppl in ppl:
+            sub_predictions.append(min(single_ppl))
+        output_handler.save_predictions(sub_predictions)
+
+        # 7. Output
+        if self.is_main_process:
+            os.makedirs(kwargs['output_json_filepath'], exist_ok=True)
+            output_handler.write_to_json(kwargs['output_json_filepath'],
+                                         kwargs['output_json_filename'])
+
+        return [
+            sample['prediction']
+            for sample in output_handler.results_dict.values()
+        ]
+
+
+@ICL_INFERENCERS.register_module()
+class BPBInferencer(PPLInferencer):
+
+    def inference(self, *args, **kwargs) -> List:
+        # print(kwargs)
+        sub_predictions = []
+        output_handler, ppl, labels = self._inference(*args, **kwargs)
+
+        # 6. Get lowest PPL class as predictions
+        ppl = list(zip(*ppl))
+        for i, single_ppl in enumerate(ppl):
+            sub_predictions.append(
+                output_handler.results_dict[str(i)]
+                [f'label: {labels[single_ppl.index(min(single_ppl))]}']['BPB'])
+        output_handler.save_predictions(sub_predictions)
+
+        # 7. Output
+        if self.is_main_process:
+            os.makedirs(kwargs['output_json_filepath'], exist_ok=True)
+            output_handler.write_to_json(kwargs['output_json_filepath'],
+                                         kwargs['output_json_filename'])
+
+        return [
+            sample[sample['prediction']]
+            for sample in output_handler.results_dict.values()
+        ]
+
+
+@ICL_INFERENCERS.register_module()
+class BPBcInferencer(PPLInferencer):
+
+    def inference(self, *args, **kwargs) -> List:
+        # print(kwargs)
+        sub_predictions = []
+        output_handler, ppl, labels = self._inference(*args, **kwargs)
+
+        # 6. Get lowest PPL class as predictions
+        ppl = list(zip(*ppl))
+        for i, single_ppl in enumerate(ppl):
+            sub_predictions.append({
+                f'label: {str(label)}': output_handler.results_dict[str(i)]
+                [f'label: {str(label)}']['BPB']
+                for label in labels
+            })
+        output_handler.save_predictions(sub_predictions)
+
+        # 7. Output
+        if self.is_main_process:
+            os.makedirs(kwargs['output_json_filepath'], exist_ok=True)
+            output_handler.write_to_json(kwargs['output_json_filepath'],
+                                         kwargs['output_json_filename'])
 
         return [
             sample['prediction']

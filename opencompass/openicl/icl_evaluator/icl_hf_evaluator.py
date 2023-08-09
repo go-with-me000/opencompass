@@ -50,7 +50,7 @@ class HuggingfaceEvaluator(BaseEvaluator):
         """
         return scores
 
-    def score(self, predictions: List, references: List) -> dict:
+    def score(self, pred_dicts: List, references: List, mode: str) -> dict:
         """Calculate scores.
 
         Args:
@@ -65,6 +65,7 @@ class HuggingfaceEvaluator(BaseEvaluator):
 
         random.seed(self.seed)
         np.random.seed(self.seed)
+        predictions, prompts = self._calculate_pred(pred_dicts, mode)
         if len(predictions) != len(references):
             return {
                 'error':
@@ -73,11 +74,49 @@ class HuggingfaceEvaluator(BaseEvaluator):
                 f'len(references): {len(references)}'
             }
         metric = evaluate.load(self.metric)
-        scores = metric.compute(**self._preprocess(predictions, references))
+        result_dict = self._preprocess(predictions, references)
+        predictions, references = result_dict['predictions'], result_dict[
+            'references']
+        scores = metric.compute(predictions=predictions, references=references)
         result = self._postprocess(scores)
         random.setstate(random_state)
         np.random.set_state(np_random_state)
+        outputs = {}
+        for i, (pred, refer,
+                prompt) in enumerate(zip(predictions, references, prompts)):
+            outputs[i] = {
+                'prompt': prompt,
+                'predictions': pred,
+                'reference': refer,
+                'result': 'yes' if pred == refer else 'no'
+            }
+        result['outputs'] = outputs
         return result
+
+    def _calculate_pred(self, pred_dicts: List, mode: str):
+        predictions = []
+        prompts = []
+        for pred_dict in pred_dicts:
+            preds = {
+                key: value
+                for key, value in pred_dict.items()
+                if key.startswith('label: ')
+            }
+            keys = []
+            values = []
+            for item in preds.items():
+                keys.append(item[0])
+                values.append(item[1])
+            assert mode in values[0], 'The mode is not  in former inference!'
+            keys = [key.replace('label: ', '') for key in keys]
+            prompts = [value['prompt'] for value in values]
+            results = [value[mode] for value in values]
+
+            pred = keys[results.index(min(results))]
+            prompt = prompts[results.index(min(results))]
+            predictions.append(pred)
+            prompts.append(prompt)
+        return predictions, prompts
 
 
 @ICL_EVALUATORS.register_module()
