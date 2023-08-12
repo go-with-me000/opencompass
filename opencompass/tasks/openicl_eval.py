@@ -40,6 +40,15 @@ class OpenICLEvalTask(BaseTask):
         return template.format(task_cmd=command)
 
     def run(self):
+        import os
+        os.environ[
+            'http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+        os.environ[
+            'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+        os.environ[
+            'HTTP_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+        os.environ[
+            'HTTPS_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
         for model_cfg, dataset_cfgs in zip(self.model_cfgs, self.dataset_cfgs):
             for dataset_cfg in dataset_cfgs:
                 self.model_cfg = model_cfg
@@ -135,13 +144,13 @@ class OpenICLEvalTask(BaseTask):
                         self._get_vote_out(proc, s) for s in pred_strs
                     ]
                 else:
-                    pred_strs = [proc(s) for s in pred_strs]
+                    # pred_strs = [proc(s) for s in pred_strs]
+                    for pred_dict in pred_strs:
+                        pred_dict['prediction'] = proc(pred_dict['prediction'])
 
             icl_evaluator = ICL_EVALUATORS.build(self.eval_cfg['evaluator'])
             result = icl_evaluator.score(
-                pred_dicts=pred_strs,
-                references=test_set[self.output_column],
-                mode=self.eval_cfg.get('mode', 'PPL'))
+                pred_dicts=pred_strs, references=test_set[self.output_column])
 
         if 'error' in result:
             self.logger.error(

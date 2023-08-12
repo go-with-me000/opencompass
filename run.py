@@ -2,9 +2,11 @@ import argparse
 import getpass
 import os
 import os.path as osp
+import warnings
 from datetime import datetime
 
 from mmengine.config import Config
+from pkg_resources import PkgResourcesDeprecationWarning
 
 from opencompass.partitioners import (MultimodalNaivePartitioner,
                                       NaivePartitioner, SizePartitioner)
@@ -149,6 +151,7 @@ def parse_dlc_args(dlc_parser):
 
 
 def main():
+    warnings.filterwarnings('ignore', category=PkgResourcesDeprecationWarning)
     args = parse_args()
     if args.dry_run:
         args.debug = True

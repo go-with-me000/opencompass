@@ -6,31 +6,31 @@ from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
     # from .collections.C_plus import datasets
-    from .collections.example import datasets
+    from .collections.evaluation import datasets
     from .models.modelv1 import models
 
     # from .summarizers.small import summarizer
 
 
-work_dir = './outputs/2023_08_10/'
+work_dir = './outputs/2023_08_11/'
 
 infer = dict(
-    partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=15),
+    partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,
-        max_num_workers=16,
+        max_num_workers=32,
         task=dict(type=OpenICLInferTask),
-        retry=4),
+        retry=2),
 )
 
 eval = dict(
     partitioner=dict(type=NaivePartitioner),
     runner=dict(
         type=SlurmRunner,
-        max_num_workers=64,
+        max_num_workers=5,
         task=dict(type=OpenICLEvalTask),
-        retry=4),
+        retry=10),
 )
 
-# python run.py configs/eval_s.py -p llm -r -l --debug 2>&1 | tee log.txt
+# python run.py configs/eval_evaluation.py -p llm-p2 -r -l --debug 2>&1 | tee log.txt

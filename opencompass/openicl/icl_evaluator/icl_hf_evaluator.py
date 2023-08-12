@@ -1,4 +1,5 @@
 import random
+import statistics
 from typing import List
 
 import evaluate
@@ -50,7 +51,7 @@ class HuggingfaceEvaluator(BaseEvaluator):
         """
         return scores
 
-    def score(self, pred_dicts: List, references: List, mode: str) -> dict:
+    def score(self, predictions: List, references: List) -> dict:
         """Calculate scores.
 
         Args:
@@ -65,7 +66,6 @@ class HuggingfaceEvaluator(BaseEvaluator):
 
         random.seed(self.seed)
         np.random.seed(self.seed)
-        predictions, prompts = self._calculate_pred(pred_dicts, mode)
         if len(predictions) != len(references):
             return {
                 'error':
@@ -74,49 +74,11 @@ class HuggingfaceEvaluator(BaseEvaluator):
                 f'len(references): {len(references)}'
             }
         metric = evaluate.load(self.metric)
-        result_dict = self._preprocess(predictions, references)
-        predictions, references = result_dict['predictions'], result_dict[
-            'references']
-        scores = metric.compute(predictions=predictions, references=references)
+        scores = metric.compute(**self._preprocess(predictions, references))
         result = self._postprocess(scores)
         random.setstate(random_state)
         np.random.set_state(np_random_state)
-        outputs = {}
-        for i, (pred, refer,
-                prompt) in enumerate(zip(predictions, references, prompts)):
-            outputs[i] = {
-                'prompt': prompt,
-                'predictions': pred,
-                'reference': refer,
-                'result': 'yes' if pred == refer else 'no'
-            }
-        result['outputs'] = outputs
         return result
-
-    def _calculate_pred(self, pred_dicts: List, mode: str):
-        predictions = []
-        prompts = []
-        for pred_dict in pred_dicts:
-            preds = {
-                key: value
-                for key, value in pred_dict.items()
-                if key.startswith('label: ')
-            }
-            keys = []
-            values = []
-            for item in preds.items():
-                keys.append(item[0])
-                values.append(item[1])
-            assert mode in values[0], 'The mode is not  in former inference!'
-            keys = [key.replace('label: ', '') for key in keys]
-            prompts = [value['prompt'] for value in values]
-            results = [value[mode] for value in values]
-
-            pred = keys[results.index(min(results))]
-            prompt = prompts[results.index(min(results))]
-            predictions.append(pred)
-            prompts.append(prompt)
-        return predictions, prompts
 
 
 @ICL_EVALUATORS.register_module()
@@ -181,6 +143,71 @@ class RougeEvaluator(HuggingfaceEvaluator):
             dict: postprocessed scores.
         """
         return {k: v * 100 for k, v in scores.items()}
+
+    def score(self, pred_dicts: List, references: List) -> dict:
+        """Calculate scores.
+
+        Args:
+            predictions (List): List of predictions of each sample.
+            references (List): List of targets for each sample.
+
+        Returns:
+            dict: calculated scores.
+        """
+        random_state = random.getstate()
+        np_random_state = np.random.get_state()
+        random.seed(self.seed)
+        np.random.seed(self.seed)
+        predictions, outputs = self._calculate_pred(pred_dicts, references)
+        if len(predictions) != len(references):
+            return {
+                'error':
+                'predictions and references have different '
+                f'length. len(predictions): {len(predictions)}, '
+                f'len(references): {len(references)}'
+            }
+        path = '/mnt/petrelfs/chenkeyu1/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--rouge/1ef1dba770f8991691bb6334358d833e221e99f8293a5ace6fb6c8e3f69c221c/rouge.py'
+        self.metric = path
+        metric = evaluate.load(self.metric)
+        scores = metric.compute(**self._preprocess(predictions, references),
+                                use_aggregator=False)
+        result_list = []
+        for i in range(len(scores['rouge1'])):
+            result_list.append([scores[key][i] for key in scores])
+        for i in range(len(references)):
+            outputs[str(i)]['score'] = {
+                'rouge1': result_list[i][0],
+                'rouge2': result_list[i][1],
+                'rougeL': result_list[i][2],
+                'rougeLsum': result_list[i][3],
+            }
+        scores = {
+            'rouge1': statistics.mean(scores['rouge1']),
+            'rouge2': statistics.mean(scores['rouge2']),
+            'rougeL': statistics.mean(scores['rougeL']),
+            'rougeLsum': statistics.mean(scores['rougeLsum']),
+        }
+        result = self._postprocess(scores)
+        result['outputs'] = outputs
+        random.setstate(random_state)
+        np.random.set_state(np_random_state)
+        return result
+
+    def _calculate_pred(self, pred_dicts: List, references: List):
+        predictions = []
+        prompt_list = []
+        outputs = {}
+        for i, (pred_dict, refer) in enumerate(zip(pred_dicts, references)):
+            prompt = pred_dict['origin_prompt']
+            prediction = pred_dict['prediction']
+            prompt_list.append(prompt)
+            predictions.append(prediction)
+            outputs[str(i)] = {
+                'prompt': prompt,
+                'prediction': prediction,
+                'reference': refer
+            }
+        return predictions, outputs
 
 
 @ICL_EVALUATORS.register_module()

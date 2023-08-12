@@ -5,6 +5,7 @@ import os.path as osp
 from datetime import datetime
 
 import mmengine
+import pandas as pd
 import tabulate
 from mmengine import ConfigDict
 
@@ -233,3 +234,37 @@ class Summarizer:
         with open(output_csv_path, 'w', encoding='utf-8') as f:
             f.write('\n'.join([','.join(row) for row in table]) + '\n')
         self.logger.info(f'write csv to {osp.abspath(output_csv_path)}')
+        calculate_corr(table, output_csv_path)
+
+def calculate_corr(table, output_csv_path):
+    def count_unique_elements(table):
+        unique_elements = set()
+        for row in table:
+            if row[0] != 'dataset':
+                unique_elements.add(row[0])
+        return len(unique_elements), unique_elements
+
+    num_datasets, name_datasets = count_unique_elements(table)
+    for name in name_datasets:
+        acc_list = None
+        ppl_list = None
+        for row in table:
+            if row[0] == name and row[2] == 'accuracy':
+                acc_list = row[4:]
+                acc_list = [round(float(item), 2) for item in acc_list]
+            if row[0] == name and row[2] == 'right-ppl':
+                ppl_list = row[4:]
+                ppl_list = [round(float(item), 2) for item in ppl_list]
+        data = {
+            f'{name}_acc': acc_list,
+            f'{name}_ppl': ppl_list
+        }
+        if acc_list and ppl_list:
+            # assert acc_list, "acc list should not be None"
+            # assert ppl_list, "ppl list should not be None"
+            df = pd.DataFrame(data)
+            corr_matrix = df.corr(method='spearman')
+            corr = round(corr_matrix.iloc[0, 1], 6)
+            with open(output_csv_path, 'a') as f:
+                row = f'{name},{corr}\n'
+                f.write(row)
