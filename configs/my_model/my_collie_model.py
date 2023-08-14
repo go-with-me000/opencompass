@@ -3,8 +3,8 @@ from opencompass.models import HuggingFaceCausalLM
 models = [
     dict(
         type=HuggingFaceCausalLM,
-        abbr='llama-13b',
-        path="/mnt/petrelfs/chenkeyu1/models/evaluation/open_llama_7b/",
+        abbr='open_llama_3b',
+        path="/mnt/petrelfs/chenkeyu1/models/evaluation/open_llama_3b/",
         # tokenizer_path='/mnt/petrelfs/chenkeyu1/models/collie/tokenizer/',
         tokenizer_kwargs=dict(padding_side='left',
                               truncation_side='left',
