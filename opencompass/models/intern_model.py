@@ -39,7 +39,7 @@ class InternLM(BaseModel):
                     model_config: Optional[str] = None):
 
         from internlm.load.load_model import load_llm
-        from internlm.model import build_model_with_cfg
+        from internlm.model.modeling_llama import build_model_with_cfg
 
         self.model, self.tokenizer, self.generator, _ = load_llm(
             path,
