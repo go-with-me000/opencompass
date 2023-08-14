@@ -8,7 +8,7 @@ fairscale
 faiss_gpu==1.7.2
 jieba
 mmengine>=0.8.2
-nltk==3.8
+nltk==3.8.1
 numpy==1.23.4
 openai
 pandas<2.0.0

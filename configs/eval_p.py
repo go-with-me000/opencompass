@@ -5,7 +5,7 @@ from opencompass.runners import LocalRunner, SlurmRunner
 from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
-    from .datasets.collections.base_small import datasets
+    from .datasets.collections.C import datasets
     # from .collections.evaluation import datasets
     # from .datasets.collections.example import datasets
     from .my_model.modelv1 import models
@@ -13,7 +13,7 @@ with read_base():
     # from .summarizers.small import summarizer
 
 
-work_dir = './outputs/2023_08_11/'
+work_dir = './outputs/2023_08_14/'
 
 infer = dict(
     partitioner=dict(type=SizePartitioner, max_task_size=10000, gen_task_coef=10),
