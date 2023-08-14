@@ -143,8 +143,8 @@ class PPLInferencerOutputHandler:
         if 'label: ' + str(label) not in self.results_dict[str(idx)].keys():
             self.results_dict[str(idx)]['label: ' + str(label)] = {}
         self.results_dict[str(idx)]['label: ' +
-                                    str(label)]['testing input'] = input
-        self.results_dict[str(idx)]['label: ' + str(label)]['prompt'] = prompt
+                                    str(label)]['testing input'] = input[:100]
+        self.results_dict[str(idx)]['label: ' + str(label)]['prompt'] = prompt[:100]
         self.results_dict[str(idx)]['label: ' + str(label)]['PPL'] = ppl
 
     def save_prompt_and_condprob(self, input, prompt, cond_prob, idx, choices):

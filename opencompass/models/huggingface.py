@@ -89,18 +89,20 @@ class HuggingFace(BaseModel):
         from transformers import AutoTokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(
             tokenizer_path if tokenizer_path else path, **tokenizer_kwargs)
-        if self.tokenizer.pad_token_id is None:
-            self.logger.warning('pad_token_id is not set for the tokenizer. '
-                                'Using eos_token_id as pad_token_id.')
-            self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        # if self.tokenizer.pad_token_id is None:
+        #     self.logger.warning('pad_token_id is not set for the tokenizer. '
+        #                         'Using eos_token_id as pad_token_id.')
+        #     self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        #     self.tokenizer.pad_token = self.tokenizer.eos_token
 
         # A patch for llama when batch_padding = True
         # if 'decapoda-research/llama' in path or \
         #         (tokenizer_path and
         #          'decapoda-research/llama' in tokenizer_path):
-        self.logger.warning('We set new pad_token_id for LLaMA model')
-        # keep consistent with official LLaMA repo
-        # https://github.com/google/sentencepiece/blob/master/python/sentencepiece_python_module_example.ipynb  # noqa
+        #     self.logger.warning('We set new pad_token_id for LLaMA model')
+        #     # keep consistent with official LLaMA repo
+        #     # https://github.com/google/sentencepiece/blob/master/python/sentencepiece_python_module_example.ipynb  # noqa
         self.tokenizer.bos_token = '<s>'
         self.tokenizer.eos_token = '</s>'
         self.tokenizer.pad_token_id = 0
@@ -121,10 +123,10 @@ class HuggingFace(BaseModel):
         self.model.eval().half()
 
         # A patch for llama when batch_padding = True
-        # if 'decapoda-research/llama' in path:
-        self.model.config.bos_token_id = 1
-        self.model.config.eos_token_id = 2
-        self.model.config.pad_token_id = self.tokenizer.pad_token_id
+        if 'decapoda-research/llama' in path:
+            self.model.config.bos_token_id = 1
+            self.model.config.eos_token_id = 2
+            self.model.config.pad_token_id = self.tokenizer.pad_token_id
 
     def generate(self, inputs: List[str], max_out_len: int,
                  **kwargs) -> List[str]:
@@ -144,7 +146,7 @@ class HuggingFace(BaseModel):
         else:
             return sum((self._single_generate(
                 inputs=[input_], max_out_len=max_out_len, **kwargs)
-                        for input_ in inputs), [])
+                for input_ in inputs), [])
 
     def _batch_generate(self, inputs: List[str], max_out_len: int,
                         **kwargs) -> List[str]:
@@ -165,7 +167,7 @@ class HuggingFace(BaseModel):
                                                   padding=True,
                                                   truncation=True,
                                                   max_length=self.max_seq_len -
-                                                  max_out_len)
+                                                             max_out_len)
         tokens = {
             k: torch.tensor(np.array(tokens[k]), device=self.model.device)
             for k in tokens if k in ['input_ids', 'attention_mask']
@@ -206,9 +208,9 @@ class HuggingFace(BaseModel):
         input_ids = self.tokenizer(inputs,
                                    truncation=True,
                                    max_length=self.max_seq_len -
-                                   max_out_len)['input_ids']
+                                              max_out_len)['input_ids']
         input_ids = torch.tensor(input_ids, device=self.model.device)
-        outputs = self.model.generate(input_ids=input_ids,max_new_tokens=max_out_len,**kwargs)
+        outputs = self.model.generate(input_ids=input_ids, max_new_tokens=max_out_len, **kwargs)
 
         if not self.extract_pred_after_decode:
             outputs = outputs[:, input_ids.shape[1]:]
@@ -298,8 +300,9 @@ class HuggingFace(BaseModel):
 
         shift_labels = inputs['tokens']['input_ids'][..., 1:].contiguous()
 
+        self.tokenizer.pad_token_id = 0
         loss_fct = torch.nn.CrossEntropyLoss(
-            reduction='none', ignore_index=self.tokenizer.pad_token_id)
+            reduction='none', ignore_index=0)
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)),
                         shift_labels.view(-1)).view(shift_labels.size())
 
@@ -311,9 +314,10 @@ class HuggingFace(BaseModel):
             loss = loss * mask
 
         lens = (inputs['tokens']['input_ids'] !=
-                self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
+                0).sum(-1).cpu().numpy()
         if mask_length is not None:
             lens -= np.array(mask_length)
+        loss = loss.float()
         ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
         return ce_loss
 

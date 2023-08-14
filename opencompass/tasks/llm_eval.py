@@ -63,7 +63,7 @@ class ModelEvaluator:
         model_scores = defaultdict(int)
         for question, responses in zip(self.questions, self.responses):
             prompt = self._make_prompt(question, responses)
-            print(prompt)
+
             output = self.judger.generate(prompt,
                                           max_out_len=2 *
                                           len(self.model_abbrs))

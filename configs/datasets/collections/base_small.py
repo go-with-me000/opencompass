@@ -3,13 +3,13 @@ from mmengine.config import read_base
 with read_base():
     # from ..ceval.ceval_ppl_578f8d import ceval_datasets
     from ..bbh.bbh_gen_5b92b0 import bbh_datasets
-    # from ..CLUE_CMRC.CLUE_CMRC_gen_1bd3c8 import CMRC_datasets
-    # from ..CLUE_DRCD.CLUE_DRCD_gen_1bd3c8 import DRCD_datasets
-    # from ..CLUE_afqmc.CLUE_afqmc_ppl_6507d7 import afqmc_datasets
-    # from ..FewCLUE_bustm.FewCLUE_bustm_ppl_e53034 import bustm_datasets
-    # from ..FewCLUE_chid.FewCLUE_chid_ppl_8f2872 import chid_datasets
-    # from ..FewCLUE_cluewsc.FewCLUE_cluewsc_ppl_868415 import cluewsc_datasets
-    # from ..FewCLUE_eprstmt.FewCLUE_eprstmt_ppl_f1e631 import eprstmt_datasets
+    from ..CLUE_CMRC.CLUE_CMRC_gen_1bd3c8 import CMRC_datasets
+    from ..CLUE_DRCD.CLUE_DRCD_gen_1bd3c8 import DRCD_datasets
+    from ..CLUE_afqmc.CLUE_afqmc_ppl_6507d7 import afqmc_datasets
+    from ..FewCLUE_bustm.FewCLUE_bustm_ppl_e53034 import bustm_datasets
+    from ..FewCLUE_chid.FewCLUE_chid_ppl_8f2872 import chid_datasets
+    from ..FewCLUE_cluewsc.FewCLUE_cluewsc_ppl_868415 import cluewsc_datasets
+    from ..FewCLUE_eprstmt.FewCLUE_eprstmt_ppl_f1e631 import eprstmt_datasets
     from ..humaneval.humaneval_gen_8e312c import humaneval_datasets
     from ..mbpp.mbpp_gen_1e1056 import mbpp_datasets
     from ..lambada.lambada_gen_217e11 import lambada_datasets

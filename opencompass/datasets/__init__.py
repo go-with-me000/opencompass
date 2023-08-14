@@ -66,3 +66,4 @@ from .xcopa import *  # noqa: F401, F403
 from .xlsum import *  # noqa: F401, F403
 from .xsum import *  # noqa: F401, F403
 from .alpaceFarm import * # noqa: F401, F403
+from .qwen import * # noqa: F401, F403
