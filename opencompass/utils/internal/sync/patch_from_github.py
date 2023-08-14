@@ -83,8 +83,6 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
                     subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True)
                     continue
                 else:
-                    status += '\n' + str(result.stdout)
-                    status += '\n' + str(result.stderr)
                     status = f'Error applying patch for commit {commit.hexsha}. Exiting...'
                     status += '\n' + str(e)
                     break
