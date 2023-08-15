@@ -18,7 +18,7 @@ qwen_datasets = [
     dict(
         type=QwenDataset,
         abbr='Qwen',
-        path='/mnt/petrelfs/chenkeyu1/datasets/zhouyunhua/qwen/',
+        path='/mnt/petrelfs/chenkeyu1/datasets/zhouyunhua/2048_dir_long/',
         reader_cfg=qwen_reader_cfg,
         infer_cfg=qwen_infer_cfg)
 ]
