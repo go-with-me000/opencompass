@@ -1,5 +1,5 @@
 """PPL Inferencer."""
-
+import math
 import os
 from typing import List, Optional
 
@@ -149,7 +149,6 @@ class PPLInferencer(BaseInferencer):
                                                                mode='ppl'))
                     normalizing_prompt_list.append(normalizing_prompt)
                 prompt_list.append(prompt)
-
             if normalizing_str is not None:
                 normalizing_str_len = self.model.get_token_len_from_template(
                     normalizing_str, mode='ppl')
@@ -205,8 +204,16 @@ class PPLInferencer(BaseInferencer):
             os.makedirs(output_json_filepath, exist_ok=True)
             output_handler.write_to_json(output_json_filepath,
                                          output_json_filename)
-
+        all_ppl = 0
+        for single_ppls in ppl:
+            single_ppl = single_ppls[0]
+            all_ppl = all_ppl+single_ppl
+        final_ppl = math.exp(all_ppl/len(ppl))
+        print(final_ppl)
+        import pdb;pdb.set_trace()
         return [
             sample['prediction']
             for sample in output_handler.results_dict.values()
         ]
+
+
