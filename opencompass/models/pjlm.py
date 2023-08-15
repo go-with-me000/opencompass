@@ -34,7 +34,7 @@ class LLM(BaseModel):
                     max_seq_len: int,
                     tokenizer_path: Optional[str] = None,
                     tokenizer_type: Optional[str] = None):
-        from internlm.load_model import load_llm
+        from trainllm.load_model import load_llm
         self.model, self.tokenizer, self.generator, _ = load_llm(
             path,
             max_seq_len,
@@ -43,8 +43,8 @@ class LLM(BaseModel):
 
     def _load_tokenizer(self, tokenizer_path: str, tokenizer_type: str,
                         max_seq_len: int):
-        from internlm.load_model import LLMTokenizer
         from sentencepiece import SentencePieceProcessor
+        from trainllm.load_model import LLMTokenizer
         tokenizer = SentencePieceProcessor()
         tokenizer.load(tokenizer_path)
         tokenizer = LLMTokenizer(tokenizer,
@@ -154,10 +154,10 @@ class LLMv2(LLM):
                     model_type: Optional[str] = None,
                     tokenizer_path: Optional[str] = None,
                     tokenizer_type: Optional[str] = None):
-        from internlm.load_model import load_llm
-        from internlm.model2.converted_llama.packed_pipeline_flash_converted_llama1d import \
+        from trainllm.load_model import load_llm
+        from trainllm.model2.converted_llama.packed_pipeline_flash_converted_llama1d import \
             Packed_Flash_Converted_LLAMA_exlarge_pipeline_1D  # noqa: E501
-        from internlm.model2.llama.packed_pipeline_flash_llama1d import \
+        from trainllm.model2.llama.packed_pipeline_flash_llama1d import \
             Packed_Flash_LLAMA_exlarge_pipeline_1D
         module = None
         if model_type == 'origin':
@@ -207,10 +207,10 @@ class LLMv3(LLM):
                     model_type: Optional[str] = None,
                     tokenizer_path: Optional[str] = None,
                     tokenizer_type: Optional[str] = None):
-        from internlm.load_model import load_llm
-        from internlm.model3.converted_llama.packed_pipeline_flash_converted_llama1d import \
+        from trainllm.load_model import load_llm
+        from trainllm.model3.converted_llama.packed_pipeline_flash_converted_llama1d import \
             Packed_Flash_Converted_LLAMA_exlarge_pipeline_1D  # noqa: E501
-        from internlm.model3.llama.packed_pipeline_flash_llama1d import \
+        from trainllm.model3.llama.packed_pipeline_flash_llama1d import \
             Packed_Flash_LLAMA_exlarge_pipeline_1D
         module = None
         if model_type == 'origin':

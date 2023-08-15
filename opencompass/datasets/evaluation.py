@@ -4,9 +4,8 @@ from typing import List
 
 import evaluate
 import numpy as np
-from datasets import load_dataset
 
-from opencompass.registry import ICL_EVALUATORS, LOAD_DATASET
+from opencompass.registry import ICL_EVALUATORS
 
 
 @ICL_EVALUATORS.register_module()
@@ -129,14 +128,19 @@ class EvaluationEvaluator():
             bpbs = [value['BPB'] for value in values]
             pred = keys[ppls.index(min(ppls))]
             prompt = prompts[ppls.index(min(ppls))]
-            stds = statistics.stdev(ppls)
-            std_list.append(stds)
-            ppl_list.append(statistics.mean(ppls))
             right_ppl_list.append(min(ppls))
-            bpb_list.append(statistics.mean(bpbs))
             right_bpb_list.append(min(bpbs))
             predictions.append(pred)
             prompt_list.append(prompt)
+            if len(ppls) == 1:
+                std_list.append(1)
+                ppl_list.append(ppls[0])
+                bpb_list.append(bpbs[0])
+            else:
+                stds = statistics.stdev(ppls)
+                std_list.append(stds)
+                ppl_list.append(statistics.mean(ppls))
+                bpb_list.append(statistics.mean(bpbs))
         meanP = statistics.mean(ppl_list)
         meanB = statistics.mean(bpb_list)
         meanV = statistics.mean(std_list)

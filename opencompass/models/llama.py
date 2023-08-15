@@ -32,7 +32,7 @@ class LLama(LLM):
                     max_batch_size: int,
                     tokenizer_path: Optional[str] = None,
                     tokenizer_type: Optional[str] = None):
-        from internlm.load_model import load_llama
+        from trainllm.load_model import load_llama
         self.model, self.tokenizer, self.generator = load_llama(
             path,
             max_seq_len,

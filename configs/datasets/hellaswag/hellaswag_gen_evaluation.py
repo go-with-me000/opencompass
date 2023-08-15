@@ -14,7 +14,7 @@ hellaswag_reader_cfg = dict(
 hellaswag_infer_cfg = dict(
     prompt_template=dict(
         type=PromptTemplate,
-        template="{ctx}\n"
+        template="{ctx} "
     ),
     retriever=dict(type=ZeroRetriever),
     inferencer=dict(type=GenInferencer,max_out_len=50),

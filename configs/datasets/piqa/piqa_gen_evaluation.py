@@ -14,7 +14,7 @@ piqa_reader_cfg = dict(
 piqa_infer_cfg = dict(
     prompt_template=dict(
         type=PromptTemplate,
-        template="{goal}\n"
+        template="{goal} "
     ),
     retriever=dict(type=ZeroRetriever),
     inferencer=dict(type=GenInferencer,max_out_len=50),
