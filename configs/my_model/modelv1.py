@@ -51,21 +51,21 @@ models = [
     #     batch_size=16,
     #     run_cfg=dict(num_gpus=1, num_procs=1))
 
-dict(
-        type=HuggingFaceCausalLM,
-        abbr='Qwen',
-        path="/mnt/petrelfs/chenkeyu1/models/huggingface/Qwen-7B/",
-        tokenizer_path='Qwen/Qwen-7B',
-        tokenizer_kwargs=dict(padding_side='left',
-                              truncation_side='left',
-                              use_fast=False,
-                              trust_remote_code=True,
-                              ),
-        max_out_len=100,
-        max_seq_len=18000,
-        batch_size=1,
-        model_kwargs=dict(device_map='auto',trust_remote_code=True),
-        batch_padding=False,  # if false, inference with for-loop without batch padding
-        run_cfg=dict(num_gpus=1, num_procs=1),
-    ),
+# dict(
+#         type=HuggingFaceCausalLM,
+#         abbr='Qwen',
+#         path="/mnt/petrelfs/chenkeyu1/models/huggingface/Qwen-7B/",
+#         tokenizer_path='Qwen/Qwen-7B',
+#         tokenizer_kwargs=dict(padding_side='left',
+#                               truncation_side='left',
+#                               use_fast=False,
+#                               trust_remote_code=True,
+#                               ),
+#         max_out_len=100,
+#         max_seq_len=18000,
+#         batch_size=1,
+#         model_kwargs=dict(device_map='auto',trust_remote_code=True),
+#         batch_padding=False,  # if false, inference with for-loop without batch padding
+#         run_cfg=dict(num_gpus=1, num_procs=1),
+#     ),
 ]
