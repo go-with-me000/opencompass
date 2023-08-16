@@ -5,7 +5,10 @@ from pathlib import Path
 from typing import List, Optional
 
 import numpy as np
-from mmengine.dist import is_main_process
+# from mmengine.dist import is_main_process
+is_main_process = True
+import torch
+from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 from ..icl_prompt_template import PromptTemplate

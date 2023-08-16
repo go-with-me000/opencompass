@@ -6,13 +6,14 @@ from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
     # from .collections.C_plus import datasets
-    from .collections.evaluation_gen import datasets
-    from .models.modelv1 import models
+    # from .collections.evaluation_gen import datasets
+    from .collections.evaluation import datasets
+    from .models.intern_model import models
 
     # from .summarizers.small import summarizer
 
 
-work_dir = './outputs/2023_08_15/'
+work_dir = './outputs/2023_08_16/'
 
 infer = dict(
     partitioner=dict(type=SizePartitioner, max_task_size=10000, gen_task_coef=10),
