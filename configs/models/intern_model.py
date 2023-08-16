@@ -1,6 +1,6 @@
 from opencompass.models import HuggingFaceCausalLM, InternLM
 from opencompass.models import LLama
-from opencompass.models.pjlm import LLMv3
+from opencompass.models import LLMv3
 
 
 
@@ -16,7 +16,7 @@ models = [
     #     max_seq_len=2048,
     #     batch_size=16,
     #     run_cfg=dict(num_gpus=1, num_procs=1)),
-
+    #
     # dict(
     #     type=InternLM,
     #     path="s3://model_weights/0831/feizhaoye/1b_baijuyi_posneg/5000/",
@@ -42,16 +42,17 @@ models = [
 
     dict(
         type=HuggingFaceCausalLM,
-        path="/mnt/petrelfs/chenkeyu1/models/models/huggingface/Qwen-7B/",
+        path="/mnt/petrelfs/chenkeyu1/models/huggingface/Qwen-7B/",
         tokenizer_path='Qwen/Qwen-7B',
         tokenizer_kwargs=dict(padding_side='left',
                               truncation_side='left',
+                              trust_remote_code=True,
                               use_fast=False, ),
         max_out_len=100,
         max_seq_len=2048,
         batch_size=16,
         model_kwargs=dict(device_map='auto', trust_remote_code=True),
-        batch_padding=True,  # if false, inference with for-loop without batch padding
+        batch_padding=False,  # if false, inference with for-loop without batch padding
         run_cfg=dict(num_gpus=1, num_procs=1),
     ),
 

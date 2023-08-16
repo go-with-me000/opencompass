@@ -5,6 +5,7 @@ with read_base():
     from ..datasets.hellaswag.hellaswag_ppl_evaluation import hellaswag_datasets
     from ..datasets.commonsenseqa.commonsenseqa_ppl_evaluation import commonsenseqa_datasets
     from ..datasets.race.race_ppl_evaluation import race_datasets
+    from ..datasets.tinystories.tinystories_ppl_evaluation import tinystories_datasets
 
 
 datasets = sum((v for k, v in locals().items() if k.endswith('_datasets')), [])

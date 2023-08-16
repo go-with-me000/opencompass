@@ -7,3 +7,4 @@ from .intern_model import InternLM  # noqa: F401, F403
 from .llama import LLama  # noqa: F401, F403
 from .llama2 import Llama2Chat  # noqa: F401, F403
 from .openai_api import OpenAI  # noqa: F401, F403
+from .pjlm import *  # noqa: F401, F403

@@ -5,7 +5,6 @@ from opencompass.registry import LOAD_DATASET
 from .base import BaseDataset
 
 
-@LOAD_DATASET.register_module()
 class HFDataset(BaseDataset):
 
     @staticmethod

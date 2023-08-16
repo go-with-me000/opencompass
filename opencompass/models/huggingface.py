@@ -87,6 +87,10 @@ class HuggingFace(BaseModel):
         if self.tokenizer.pad_token_id is None:
             self.logger.warning('pad_token_id is not set for the tokenizer. '
                                 'Using eos_token_id as pad_token_id.')
+            if self.tokenizer.eos_token is None:
+                self.tokenizer.bos_token = '<s>'
+                self.tokenizer.eos_token = '</s>'
+                self.tokenizer.pad_token_id = 0
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
         # A patch for llama when batch_padding = True
@@ -296,7 +300,7 @@ class HuggingFace(BaseModel):
         shift_labels = inputs['tokens']['input_ids'][..., 1:].contiguous()
 
         loss_fct = torch.nn.CrossEntropyLoss(
-            reduction='none', ignore_index=self.tokenizer.pad_token_id)
+            reduction='none', ignore_index=0)
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)),
                         shift_labels.view(-1)).view(shift_labels.size())
 
@@ -308,9 +312,10 @@ class HuggingFace(BaseModel):
             loss = loss * mask
 
         lens = (inputs['tokens']['input_ids'] !=
-                self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
+                0).sum(-1).cpu().numpy()
         if mask_length is not None:
             lens -= np.array(mask_length)
+        loss = loss.float()
         ce_loss = loss.sum(-1).cpu().detach().numpy() / lens
         return ce_loss
 

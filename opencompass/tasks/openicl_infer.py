@@ -69,8 +69,7 @@ class OpenICLInferTask(BaseTask):
             self.model = build_model_from_cfg(model_cfg)
 
             import os
-            os.environ[
-                'http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+            os.environ['http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
             os.environ[
                 'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
             os.environ[
