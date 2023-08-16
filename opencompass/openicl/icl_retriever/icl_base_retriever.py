@@ -2,8 +2,8 @@
 from abc import abstractmethod
 from typing import Dict, List, Optional
 
-# from mmengine.dist import is_main_process
-is_main_process = True
+from mmengine.dist import is_main_process
+
 
 from opencompass.openicl.icl_prompt_template import PromptTemplate
 from opencompass.utils.prompt import PromptList
