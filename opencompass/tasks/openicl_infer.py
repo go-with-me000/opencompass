@@ -53,29 +53,20 @@ class OpenICLInferTask(BaseTask):
         return template.format(task_cmd=command)
 
     def run(self):
-        # import os
-        # os.environ[
-        #     'http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-        # os.environ[
-        #     'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-        # os.environ[
-        #     'HTTP_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-        # os.environ[
-        #     'HTTPS_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
         self.logger.info(f'Task {task_abbr_from_cfg(self.cfg)}')
         for model_cfg, dataset_cfgs in zip(self.model_cfgs, self.dataset_cfgs):
             self.max_out_len = model_cfg.get('max_out_len', None)
             self.batch_size = model_cfg.get('batch_size', None)
             self.model = build_model_from_cfg(model_cfg)
 
-            import os
-            os.environ['http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-            os.environ[
-                'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-            os.environ[
-                'HTTP_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-            os.environ[
-                'HTTPS_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+            # import os
+            # os.environ['http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+            # os.environ[
+            #     'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+            # os.environ[
+            #     'HTTP_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+            # os.environ[
+            #     'HTTPS_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
             for dataset_cfg in dataset_cfgs:
                 self.model_cfg = model_cfg
                 self.dataset_cfg = dataset_cfg

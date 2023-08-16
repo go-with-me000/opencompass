@@ -8,6 +8,7 @@ with read_base():
     # from .collections.C_plus import datasets
     # from .collections.evaluation_gen import datasets
     from .collections.evaluation import datasets
+    # from .collections.example import datasets
     from .models.intern_model import models
 
     # from .summarizers.small import summarizer
@@ -41,11 +42,11 @@ infer = dict(
 eval = dict(
     partitioner=dict(type=NaivePartitioner),
     runner=dict(
-        type=DLCRunner,
-        aliyun_cfg=alillm2_cfg,
+        type=LocalRunner,
+        # aliyun_cfg=alillm2_cfg,
         max_num_workers=64,
         task=dict(type=OpenICLEvalTask),
-        retry=10),
+),
 )
 
 # python run.py configs/eval_evaluation.py -p llm -r -l --debug 2>&1 | tee log.txt

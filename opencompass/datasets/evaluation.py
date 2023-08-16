@@ -1,3 +1,4 @@
+import math
 import random
 import statistics
 from typing import List
@@ -74,9 +75,11 @@ class EvaluationEvaluator():
                 f'length. len(predictions): {len(predictions)}, '
                 f'len(references): {len(references)}'
             }
-        path = '/mnt/petrelfs/chenkeyu1/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--accuracy/' \
-               'f887c0aab52c2d38e1f8a215681126379eca617f96c447638f751434e8e65b14/accuracy.py'
-        self.metric = path
+
+        import os
+        if os.path.exists("/cpfs01/"):
+            path = '/cpfs01/shared/public/chenkeyu1/metrics/accuracy/accuracy.py'
+            self.metric = path
         metric = evaluate.load(self.metric)
         result_dict = self._preprocess(predictions, references)
         predictions, references = result_dict['predictions'], result_dict[
@@ -132,6 +135,7 @@ class EvaluationEvaluator():
             right_bpb_list.append(min(bpbs))
             predictions.append(pred)
             prompt_list.append(prompt)
+
             if len(ppls) == 1:
                 std_list.append(1)
                 ppl_list.append(ppls[0])
@@ -141,9 +145,13 @@ class EvaluationEvaluator():
                 std_list.append(stds)
                 ppl_list.append(statistics.mean(ppls))
                 bpb_list.append(statistics.mean(bpbs))
-        meanP = statistics.mean(ppl_list)
-        meanB = statistics.mean(bpb_list)
-        meanV = statistics.mean(std_list)
-        meanRP = statistics.mean(right_ppl_list)
-        meanRB = statistics.mean(right_bpb_list)
+        meanP = statistics.mean(self.filters(ppl_list))
+        meanB = statistics.mean(self.filters(bpb_list))
+        meanV = statistics.mean(self.filters(std_list))
+        meanRP = statistics.mean(self.filters(right_ppl_list))
+        meanRB = statistics.mean(self.filters(right_bpb_list))
         return predictions, prompt_list, meanP, meanB, meanV, meanRP, meanRB
+
+    def filters(self, origins):
+        targets = [target for target in origins if not math.isnan(target)]
+        return targets
