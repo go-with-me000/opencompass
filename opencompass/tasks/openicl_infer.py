@@ -53,6 +53,15 @@ class OpenICLInferTask(BaseTask):
         return template.format(task_cmd=command)
 
     def run(self):
+        import os
+        os.environ[
+            'http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+        os.environ[
+            'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+        os.environ[
+            'HTTP_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+        os.environ[
+            'HTTPS_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
         self.logger.info(f'Task {task_abbr_from_cfg(self.cfg)}')
         for model_cfg, dataset_cfgs in zip(self.model_cfgs, self.dataset_cfgs):
             self.max_out_len = model_cfg.get('max_out_len', None)

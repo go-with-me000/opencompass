@@ -5,16 +5,17 @@ from opencompass.runners import LocalRunner, SlurmRunner
 from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
-    # from .collections.C_plus import datasets
-    from .collections.example import datasets
-    from .models.llama import models
+    from .collections.C_plus import datasets
+    # from .collections.example import datasets
+    # from .models.llama import models
+    from .models.modelv1 import models
 
 
 
 work_dir = './outputs/2023_08_15/'
 
 infer = dict(
-    partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=15),
+    partitioner=dict(type=SizePartitioner, max_task_size=10000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,
