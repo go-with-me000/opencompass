@@ -49,7 +49,7 @@ obqa_datasets = [
         split='test',
     ),
 ]
-for _i in range(2):
+for _i in range(1):
     obqa_reader_cfg = dict(
         input_columns=_input_columns[_i], output_column="answerKey")
     obqa_infer_cfg = dict(
