@@ -17,7 +17,7 @@ with read_base():
     from ..datasets.lcsts.lcsts_gen_9b0b89 import lcsts_datasets
 
     from ..datasets.piqa.piqa_ppl_1cf9f0 import piqa_datasets
-    from ..datasets.commonsenseqa.commonsenseqa_ppl_716f78 import commonsenseqa_datasets
+    # from ..datasets.commonsenseqa.commonsenseqa_ppl_716f78 import commonsenseqa_datasets
     from ..datasets.gsm8k.gsm8k_gen_1dce88 import gsm8k_datasets
     from ..datasets.humaneval.humaneval_gen_fd5822 import humaneval_datasets
     from ..datasets.mbpp.mbpp_gen_6590b0 import mbpp_datasets

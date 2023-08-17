@@ -72,7 +72,16 @@ class HuggingfaceEvaluator(BaseEvaluator):
                 f'length. len(predictions): {len(predictions)}, '
                 f'len(references): {len(references)}'
             }
-        metric = evaluate.load(self.metric)
+        import os
+        if os.path.exists("/cpfs01/"):
+            path = self.metric
+            if self.metric == "accuracy":
+                path = "/cpfs01/shared/public/chenkeyu1/metrics/accuracy/accuracy.py"
+            elif self.metric == "rouge":
+                path = "/cpfs01/shared/public/chenkeyu1/metrics/rouge/rouge.py"
+            metric = evaluate.load(path)
+        else:
+            metric = evaluate.load(self.metric)
         scores = metric.compute(**self._preprocess(predictions, references))
         result = self._postprocess(scores)
         random.setstate(random_state)

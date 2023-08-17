@@ -1,6 +1,7 @@
 import json
+import os
 
-from datasets import Dataset, load_dataset
+from datasets import Dataset, load_dataset, load_from_disk
 
 from opencompass.registry import LOAD_DATASET
 
@@ -12,7 +13,19 @@ class hellaswagDataset(BaseDataset):
 
     @staticmethod
     def load(**kwargs):
-        dataset = load_dataset(**kwargs)
+        if os.path.exists("/cpfs01"):
+            path = kwargs.get("path")
+            name = kwargs.get("name", None)
+            data_files = kwargs.get("data_files", None)
+            if data_files is not None:
+                return load_dataset(**kwargs)
+            if name is not None:
+                route = "/cpfs01/shared/public/chenkeyu1/datasets/data/" + path + "/" + name
+            else:
+                route = "/cpfs01/shared/public/chenkeyu1/datasets/data/" + path + "/"
+            dataset = load_from_disk(route)
+        else:
+            dataset = load_dataset(**kwargs)
 
         def preprocess(example):
             for i in range(4):
