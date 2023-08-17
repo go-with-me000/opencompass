@@ -77,14 +77,15 @@ class EvaluationEvaluator():
             }
 
         import os
-        if os.path.exists("/cpfs01/"):
+        if os.path.exists('/cpfs01/'):
             path = '/cpfs01/shared/public/chenkeyu1/metrics/accuracy/accuracy.py'
             self.metric = path
         else:
-            path = "/mnt/petrelfs/share_data/chenkeyu1/metrics/accuracy.py"
+            path = '/mnt/petrelfs/share_data/chenkeyu1/metrics/accuracy.py'
             self.metric = path
         metric = evaluate.load(self.metric)
         result_dict = self._preprocess(predictions, references)
+        origin_predictions, origin_references = predictions, references
         predictions, references = result_dict['predictions'], result_dict[
             'references']
         scores = metric.compute(predictions=predictions, references=references)
@@ -92,8 +93,8 @@ class EvaluationEvaluator():
         random.setstate(random_state)
         np.random.set_state(np_random_state)
         outputs = {}
-        for i, (pred, refer,
-                prompt) in enumerate(zip(predictions, references, prompts)):
+        for i, (pred, refer, prompt) in enumerate(
+                zip(origin_predictions, origin_references, prompts)):
             outputs[i] = {
                 'prompt': prompt,
                 'predictions': pred,
