@@ -11,18 +11,18 @@ with read_base():
 
 
     # from .models.llama import models
-    from .models.model_08_16.models import models
+    from .models.model_08_17.models import models
 
 
 
-work_dir = './outputs/2023_08_16/'
+work_dir = './outputs/2023_08_17/'
 
 infer = dict(
-    partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=10),
+    partitioner=dict(type=SizePartitioner, max_task_size=10000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,
-        max_num_workers=32,
+        max_num_workers=64,
         task=dict(type=OpenICLInferTask),
         retry=4),
 )

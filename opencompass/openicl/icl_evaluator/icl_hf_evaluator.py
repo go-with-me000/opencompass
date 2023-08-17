@@ -81,7 +81,13 @@ class HuggingfaceEvaluator(BaseEvaluator):
                 path = "/cpfs01/shared/public/chenkeyu1/metrics/rouge/rouge.py"
             metric = evaluate.load(path)
         else:
-            metric = evaluate.load(self.metric)
+            path = self.metric
+            if self.metric == "accuracy":
+                path = "/mnt/petrelfs/share_data/chenkeyu1/metrics/accuracy.py"
+            elif self.metric == "rouge":
+                path = "/mnt/petrelfs/share_data/chenkeyu1/metrics/rouge.py"
+            metric = evaluate.load(path)
+            # metric = evaluate.load(self.metric)
         scores = metric.compute(**self._preprocess(predictions, references))
         result = self._postprocess(scores)
         random.setstate(random_state)
