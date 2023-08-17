@@ -13,7 +13,7 @@ with read_base():
     # from .summarizers.small import summarizer
 
 
-work_dir = './outputs/2023_08_16/'
+work_dir = './outputs/evaluation/08_17/'
 
 infer = dict(
     partitioner=dict(type=SizePartitioner, max_task_size=10000, gen_task_coef=10),

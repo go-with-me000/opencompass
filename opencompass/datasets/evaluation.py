@@ -80,6 +80,9 @@ class EvaluationEvaluator():
         if os.path.exists("/cpfs01/"):
             path = '/cpfs01/shared/public/chenkeyu1/metrics/accuracy/accuracy.py'
             self.metric = path
+        else:
+            path = "/mnt/petrelfs/share_data/chenkeyu1/metrics/accuracy.py"
+            self.metric = path
         metric = evaluate.load(self.metric)
         result_dict = self._preprocess(predictions, references)
         predictions, references = result_dict['predictions'], result_dict[

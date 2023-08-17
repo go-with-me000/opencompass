@@ -166,8 +166,14 @@ class RougeEvaluator(HuggingfaceEvaluator):
                 f'length. len(predictions): {len(predictions)}, '
                 f'len(references): {len(references)}'
             }
-        path = '/mnt/petrelfs/chenkeyu1/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--rouge/1ef1dba770f8991691bb6334358d833e221e99f8293a5ace6fb6c8e3f69c221c/rouge.py'
-        self.metric = path
+        # path = '/mnt/petrelfs/chenkeyu1/.cache/huggingface/modules/evaluate_modules/metrics/evaluate-metric--rouge/1ef1dba770f8991691bb6334358d833e221e99f8293a5ace6fb6c8e3f69c221c/rouge.py'
+        import os
+        if os.path.exists("/cpfs01/"):
+            path = '/cpfs01/shared/public/chenkeyu1/metrics/rouge/rouge.py'
+            self.metric = path
+        else:
+            path = "/mnt/petrelfs/share_data/chenkeyu1/metrics/rouge.py"
+            self.metric = path
         metric = evaluate.load(self.metric)
         scores = metric.compute(**self._preprocess(predictions, references),
                                 use_aggregator=False)
