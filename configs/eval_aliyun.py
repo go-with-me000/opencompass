@@ -9,10 +9,10 @@ with read_base():
 
 
     # from .models.llama import models
-    from .models.model_08_16.models import models
+    from .models.model_08_17.models_aliyun import models
 
 
-work_dir = './outputs/2023_08_16/'
+work_dir = './outputs/2023_08_17/'
 
 
 
@@ -27,7 +27,7 @@ alillm2_cfg = dict(
     worker_image='pjlab-wulan-acr-registry-vpc.cn-wulanchabu.cr.aliyuncs.com/pjlab-eflops/chenxun-st:llm-test',
 )
 infer = dict(
-    partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=10),
+    partitioner=dict(type=SizePartitioner, max_task_size=50000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=DLCRunner,
