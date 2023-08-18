@@ -6,7 +6,7 @@ from opencompass.datasets import OBQADataset
 
 _input_columns = [
     ['question_stem', 'A', 'B', 'C', 'D'],
-    ['question_stem', 'A', 'B', 'C', 'D', 'fact1'],
+    # ['question_stem', 'A', 'B', 'C', 'D', 'fact1'],
 ]
 _template = [
     {
@@ -21,18 +21,18 @@ _template = [
             ], )
         for ans in ['A', 'B', 'C', 'D']
     },
-    {
-        ans: dict(
-            round=[
-                dict(
-                    role="HUMAN",
-                    prompt=
-                    "Given the fact: {fact1}\nQuestion: {question_stem}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\nAnswer:"
-                ),
-                dict(role="BOT", prompt=ans),
-            ], )
-        for ans in ['A', 'B', 'C', 'D']
-    }
+    # {
+    #     ans: dict(
+    #         round=[
+    #             dict(
+    #                 role="HUMAN",
+    #                 prompt=
+    #                 "Given the fact: {fact1}\nQuestion: {question_stem}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\nAnswer:"
+    #             ),
+    #             dict(role="BOT", prompt=ans),
+    #         ], )
+    #     for ans in ['A', 'B', 'C', 'D']
+    # }
 ]
 
 obqa_datasets = [
@@ -41,13 +41,13 @@ obqa_datasets = [
         path='openbookqa',
         split='test',
     ),
-    dict(
-        abbr='openbookqa_fact',
-        type=OBQADataset,
-        path='openbookqa',
-        name='additional',
-        split='test',
-    ),
+    # dict(
+    #     abbr='openbookqa_fact',
+    #     type=OBQADataset,
+    #     path='openbookqa',
+    #     name='additional',
+    #     split='test',
+    # ),
 ]
 for _i in range(1):
     obqa_reader_cfg = dict(

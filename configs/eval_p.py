@@ -11,7 +11,7 @@ with read_base():
 
 
     # from .models.llama import models
-    from .models.model_08_17.models import models
+    from .models.model_08_18.models_p import models
     # from .models.huggingface import models
 
 
@@ -23,7 +23,7 @@ infer = dict(
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,
-        max_num_workers=32,
+        max_num_workers=16,
         task=dict(type=OpenICLInferTask),
         retry=4),
 )
@@ -37,4 +37,4 @@ eval = dict(
         retry=4),
 )
 
-# python run.py configs/eval_s.py -p llm -r -l --debug 2>&1 | tee log.txt
+# python run.py configs/eval_p.py -p llm-p2 -r -l --debug 2>&1 | tee log.txt
