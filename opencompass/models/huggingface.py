@@ -65,11 +65,6 @@ class HuggingFace(BaseModel):
                          tokenizer_only=tokenizer_only,
                          meta_template=meta_template)
         from opencompass.utils.fileio import patch_hf_auto_model
-        import os
-        os.environ["http_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
-        os.environ["https_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
-        os.environ["HTTP_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
-        os.environ["HTTPS_proxy"] = "http://chenkeyu1:Cky13291983702@10.1.8.50:33128/"
         if hf_cache_dir is None:
             hf_cache_dir = os.getenv('HF_MODEL_HUB', None)
         patch_hf_auto_model(hf_cache_dir)

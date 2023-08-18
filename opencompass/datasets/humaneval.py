@@ -15,15 +15,6 @@ class humanevalDataset(BaseDataset):
 
     @staticmethod
     def load(path: str):
-        import os
-        os.environ[
-            'http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-        os.environ[
-            'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-        os.environ[
-            'HTTP_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
-        os.environ[
-            'HTTPS_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
         dataset = load_dataset(path)
 
         def split_string_by_token(text, token):
