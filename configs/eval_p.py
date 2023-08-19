@@ -19,7 +19,7 @@ with read_base():
 work_dir = './outputs/2023_08_18/'
 
 infer = dict(
-    partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=5),
+    partitioner=dict(type=SizePartitioner, max_task_size=10000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,
@@ -37,4 +37,4 @@ eval = dict(
         retry=4),
 )
 
-# python run.py configs/eval_p.py -p llm-p2 -r -l --debug 2>&1 | tee log.txt
+# python run.py configs/eval_p.py -p p4_test -r -l --debug 2>&1 | tee log.txt
