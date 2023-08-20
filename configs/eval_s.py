@@ -6,12 +6,12 @@ from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
     # from .collections.C_plus import datasets
-    # from .collections.example import datasets
-    from .collections.base_small import datasets
+    from .collections.example import datasets
+    # from .collections.base_small import datasets
 
 
     # from .models.llama import models
-    from .models.model_08_17.models import models
+    from .models.model_08_18.models import models
     # from .models.huggingface import models
 
 

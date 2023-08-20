@@ -1,8 +1,6 @@
 from mmengine.config import read_base
 
 with read_base():
-    from ..datasets.ceval.ceval_ppl_578f8d import ceval_datasets
-    from ..datasets.bbh.bbh_gen_6bd693 import bbh_datasets
     from ..datasets.CLUE_CMRC.CLUE_CMRC_gen_1bd3c8 import CMRC_datasets
     from ..datasets.CLUE_DRCD.CLUE_DRCD_gen_1bd3c8 import DRCD_datasets
     from ..datasets.CLUE_afqmc.CLUE_afqmc_ppl_6507d7 import afqmc_datasets
@@ -35,5 +33,10 @@ with read_base():
     from ..datasets.nq.nq_gen_c788f6 import nq_datasets
     from ..datasets.triviaqa.triviaqa_gen_2121ce import triviaqa_datasets
     from ..datasets.crowspairs.crowspairs_ppl_e811e1 import crowspairs_datasets
+    from ..datasets.mmlu.mmlu_ppl import mmlu_datasets
+    from ..datasets.agieval.agieval_mixed import agieval_datasets
+    from ..datasets.ceval.ceval_ppl_578f8d import ceval_datasets
+    from ..datasets.bbh.bbh_gen_6bd693 import bbh_datasets
+
 
 datasets = sum((v for k, v in locals().items() if k.endswith('_datasets')), [])

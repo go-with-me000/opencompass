@@ -6,6 +6,7 @@ models = [
         path="s3://checkpoints_ssd_02/0831/20B_newton_stage2/13000/",
         tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
         tokenizer_type='v7',
+        model_config="/mnt/petrelfs/chenkeyu1/program/opencompass/internLM/configs/20B_newton_stage2.py",
         max_out_len=100,
         max_seq_len=2048,
         batch_size=16,
