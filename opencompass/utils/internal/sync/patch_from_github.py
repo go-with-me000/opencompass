@@ -89,11 +89,10 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
             os.remove(patch_file)
         if status != 0:
             break
-
-
-    # Update .github_commit file
-    with open(os.path.join(repo_path, '.github_commit'), 'w') as f:
-        f.write(commit.hexsha + '\n')
+        else:
+            # Update .github_commit file
+            with open(os.path.join(repo_path, '.github_commit'), 'w') as f:
+                f.write(commit.hexsha + '\n')
 
     actor = Actor("bot", "bot@bot.com")
     repo.index.add('.github_commit')
@@ -101,10 +100,10 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
 
     if status == 0:
         print('All patches applied successfully!')
-        lark.post(title='Gitlab 版本已顺利同步 Github 更改！', content=f'同步至 {commit.hexsha}\n {commit.message}')
+        lark.post(title='Gitlab 版本已顺利同步 Github 更改！', content=f'同步至 {commit.hexsha}\n{commit.message}')
     else:
         print(status)
-        lark.post(title='Gitlab 版本同步 Github 失败', content=f'同步至 {commit.hexsha}\n {commit.message}')
+        lark.post(title='Gitlab 版本同步 Github 失败', content=f'{status}\n同步至 {commit.hexsha}\n{commit.message}')
 
 if __name__ == '__main__':
     args = parse_args()
