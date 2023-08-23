@@ -31,7 +31,6 @@ configs/eval_7b.py
 configs/lark.py
 configs/eval_glm130b.py
 configs/eval_hf_causal.py
-configs/eval_hf_llama_7b.py
 tests/openicl/test_base_retriever.py
 tests/partitioners/test_size.py
 configs/aliyun_env.py

@@ -103,7 +103,7 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
         lark.post(title='Gitlab 版本已顺利同步 Github 更改！', content=f'同步至 {commit.hexsha}\n{commit.message}')
     else:
         print(status)
-        lark.post(title='Gitlab 版本同步 Github 失败', content=f'{status}\n同步至 {commit.hexsha}\n{commit.message}')
+        lark.post(title='Gitlab 版本同步 Github 失败', content=f'错误信息：{status}\n\n同步至 {commit.hexsha}\n{commit.message}')
 
 if __name__ == '__main__':
     args = parse_args()
