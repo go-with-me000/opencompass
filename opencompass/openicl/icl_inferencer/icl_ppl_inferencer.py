@@ -210,7 +210,6 @@ class PPLInferencer(BaseInferencer):
             all_ppl = all_ppl+single_ppl
         final_ppl = math.exp(all_ppl/len(ppl))
         print(final_ppl)
-        import pdb;pdb.set_trace()
         return [
             sample['prediction']
             for sample in output_handler.results_dict.values()
