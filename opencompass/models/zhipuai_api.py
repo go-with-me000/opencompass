@@ -98,14 +98,20 @@ class ZhiPuAI(BaseAPIModel):
 
         data = {'model': self.model, 'prompt': messages}
 
-        for _ in range(self.retry):
+        max_num_retries = 0
+        while max_num_retries < self.retry:
             self.wait()
             response = self.zhipuai.model_api.invoke(**data)
             if response['code'] == 200 and response['success']:
                 msg = response['data']['choices'][0]['content']
                 return msg
-            if response['code'] == 1301:
+            # sensitive content, prompt overlength, network error
+            # or illegal prompt
+            if (response['code'] == 1301 or response['code'] == 1261
+                    or response['code'] == 1234 or response['code'] == 1214):
                 print(response['msg'])
                 return ''
+            print(response)
+            max_num_retries += 1
 
         raise RuntimeError(response['msg'])
