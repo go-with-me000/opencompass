@@ -53,13 +53,13 @@ bustm_datasets = [
         reader_cfg=bustm_reader_cfg,
         infer_cfg=bustm_infer_cfg,
         eval_cfg=bustm_eval_cfg),
-    dict(
-        type=HFDataset,
-        abbr='bustm-test',
-        path='json',
-        data_files='./data/FewCLUE/bustm/test_public.json',
-        split='train',
-        reader_cfg=bustm_reader_cfg,
-        infer_cfg=bustm_infer_cfg,
-        eval_cfg=bustm_eval_cfg)
+    # dict(
+    #     type=HFDataset,
+    #     abbr='bustm-test',
+    #     path='json',
+    #     data_files='./data/FewCLUE/bustm/test_public.json',
+    #     split='train',
+    #     reader_cfg=bustm_reader_cfg,
+    #     infer_cfg=bustm_infer_cfg,
+    #     eval_cfg=bustm_eval_cfg)
 ]

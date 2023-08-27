@@ -1,4 +1,5 @@
 import os.path as osp
+import re
 import tempfile
 from typing import List
 
@@ -6,77 +7,8 @@ from datasets import load_dataset
 
 from opencompass.datasets import BaseDataset
 from opencompass.openicl.icl_evaluator import BaseEvaluator
-from opencompass.registry import (ICL_EVALUATORS, LOAD_DATASET,
-                                  TEXT_POSTPROCESSORS)
 
 
-@LOAD_DATASET.register_module()
-class humanevalDataset(BaseDataset):
-
-    @staticmethod
-    def load(path: str):
-        dataset = load_dataset(path)
-
-        def split_string_by_token(text, token):
-            index = text.find(token)
-            if index == -1:
-                # 如果特殊token不存在，则返回整个文本和空字符串
-                return text, ''
-            else:
-                # 根据特殊token将文本分成两半
-                part1 = text[:index]
-                part2 = text[index + len(token):]
-                return part1, part2
-
-        def input_process(input):
-            lines = input.splitlines()
-            cleaned_lines = [line.lstrip() for line in lines]
-            cleaned_text = '\n'.join(cleaned_lines)
-            input = cleaned_text.strip()
-            part1, part2 = split_string_by_token(input, '>>>')
-            part1 = part1.replace('\n', ' ')
-            input = part1 + '\n>>>' + part2
-
-            return input
-
-        def pre_process(example):
-            prompt = example['prompt']
-            start_index = prompt.find('"""')
-            if start_index != -1:
-                # 找到下一个连续三个双引号的位置
-                end_index = prompt.find('"""', start_index + 3)
-
-                if end_index != -1:
-                    # 抽取出包含在连续三个双引号之间的部分
-                    input = prompt[start_index + 3:end_index]
-                    input = input_process(input)
-                    example['input'] = input
-                else:
-                    print('未找到第二个连续三个双引号')
-            else:
-                start_index = prompt.find("'''")
-
-                if start_index != -1:
-                    # 找到下一个连续三个单引号的位置
-                    end_index = prompt.find("'''", start_index + 3)
-
-                    if end_index != -1:
-                        # 抽取出包含在连续三个单引号之间的部分
-                        input = prompt[start_index + 3:end_index]
-                        input = input_process(input)
-                        example['input'] = input
-                    else:
-                        print('未找到第二个连续三个单引号')
-                else:
-                    print('未找到第一个连续三个单引号')
-
-            return example
-
-        dataset = dataset.map(pre_process)
-        return dataset
-
-
-@ICL_EVALUATORS.register_module()
 class HumanEvaluator(BaseEvaluator):
     """Evaluator for human eval."""
 
@@ -111,11 +43,46 @@ class HumanEvaluator(BaseEvaluator):
             return {f'humaneval_{k}': score[k] * 100 for k in score}
 
 
-@TEXT_POSTPROCESSORS.register_module('humaneval')
 def humaneval_postprocess(text: str) -> str:
-    text = text.split('\n\n')[0]
     if '```' in text:
-        text = text.split('```')[1]
+        blocks = re.findall(r'```(.*?)```', text, re.DOTALL)
+        if len(blocks) == 0:
+            text = text.split('```')[1]  # fall back to default strategy
+        else:
+            text = blocks[0]  # fetch the first code block
+            if not text.startswith('\n'):  # in case starting with ```python
+                text = text[max(text.find('\n') + 1, 0):]
+    if text.strip().startswith('from') or text.strip().startswith('import'):
+        def_idx = text.find('def')
+        if def_idx != -1:
+            text = text[max(text.find('\n', def_idx) + 1, 0):]
+    text = text.split('\n\n')[0]
+    if text.strip().startswith('def'):
+        text = '\n'.join(text.split('\n')[1:])
+    if not text.startswith('    '):
+        if text.startswith(' '):
+            text = '    ' + text.lstrip()
+        else:
+            text = '\n'.join(['    ' + line for line in text.split('\n')])
+    return text
+
+
+def humaneval_gpt_postprocess(text: str) -> str:
+    """Better answer postprocessor for better instruction-aligned models like
+    GPT."""
+    if '```' in text:
+        blocks = re.findall(r'```(.*?)```', text, re.DOTALL)
+        if len(blocks) == 0:
+            text = text.split('```')[1]  # fall back to default strategy
+        else:
+            text = blocks[0]  # fetch the first code block
+            if not text.startswith('\n'):  # in case starting with ```python
+                text = text[max(text.find('\n') + 1, 0):]
+    if text.strip().startswith('from') or text.strip().startswith('import'):
+        def_idx = text.find('def')
+        if def_idx != -1:
+            text = text[max(text.find('\n', def_idx) + 1, 0):]
+    text = text.split('\n\n\n')[0]
     if text.strip().startswith('def'):
         text = '\n'.join(text.split('\n')[1:])
     if not text.startswith('    '):

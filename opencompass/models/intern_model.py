@@ -103,12 +103,17 @@ class InternLM(BaseModel):
             List[float]: A list of perplexity scores.
         """
         outputs, inputs = self.generator.get_logits(input_texts)
-
         shift_logits = outputs[..., :-1, :].contiguous()
         shift_labels = inputs['tokens'][..., 1:].contiguous()
-
         loss_fct = torch.nn.CrossEntropyLoss(
-            reduction='none', ignore_index=self.tokenizer.pad_token_id)
+            reduction='none', ignore_index=1)
+        # x1 = shift_logits.view(-1, shift_logits.size(-1))
+        # x2 = shift_labels.view(-1)
+        # import pdb;
+        # pdb.set_trace()
+        # x = loss_fct(a,b)
+        # loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)),
                         shift_labels.view(-1)).view(shift_labels.size())
 
@@ -118,7 +123,6 @@ class InternLM(BaseModel):
                 for j in range(mask_length[i] - 1, len(mask[i])):
                     mask[i][j] = 1
             loss = loss * mask
-
         lens = (inputs['tokens'] !=
                 self.tokenizer.pad_token_id).sum(-1).cpu().numpy()
         if mask_length is not None:

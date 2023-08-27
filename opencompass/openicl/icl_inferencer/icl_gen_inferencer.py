@@ -112,7 +112,6 @@ class GenInferencer(BaseInferencer):
 
         # 4. Wrap prompts with Dataloader
         dataloader = self.get_dataloader(prompt_list[index:], self.batch_size)
-
         # 5. Inference for prompts in each batch
         logger.info('Starting inference process...')
         for entry in tqdm(dataloader, disable=not self.is_main_process):

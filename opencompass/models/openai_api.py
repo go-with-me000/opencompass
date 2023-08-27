@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from typing import Dict, List, Optional, Union
@@ -49,8 +50,8 @@ class OpenAI(BaseAPIModel):
     is_api: bool = True
 
     def __init__(self,
-                 path: str,
-                 max_seq_len: int = 2048,
+                 path: str = 'gpt-3.5-turbo',
+                 max_seq_len: int = 4096,
                  query_per_second: int = 1,
                  retry: int = 2,
                  key: Union[str, List[str]] = 'ENV',
@@ -72,6 +73,11 @@ class OpenAI(BaseAPIModel):
             self.keys = [os.getenv('OPENAI_API_KEY') if key == 'ENV' else key]
         else:
             self.keys = key
+
+        # record invalid keys and skip them when requesting API
+        # - keys have insufficient_quota
+        self.invalid_keys = set()
+
         self.key_ctr = 0
         if isinstance(org, str):
             self.orgs = [org]
@@ -79,6 +85,7 @@ class OpenAI(BaseAPIModel):
             self.orgs = org
         self.org_ctr = 0
         self.url = openai_api_base
+        self.path = path
 
     def generate(
         self,
@@ -145,22 +152,44 @@ class OpenAI(BaseAPIModel):
                 messages.append(msg)
 
         # max num token for gpt-3.5-turbo is 4097
-        max_out_len = min(max_out_len, 4000 - self.get_token_len(str(input)))
+        context_window = 4096
+        if '32k' in self.path:
+            context_window = 32768
+        elif '16k' in self.path:
+            context_window = 16384
+        elif 'gpt-4' in self.path:
+            context_window = 8192
+
+        # Hold out 100 tokens due to potential errors in tiktoken calculation
+        max_out_len = min(
+            max_out_len, context_window - self.get_token_len(str(input)) - 100)
         if max_out_len <= 0:
             return ''
 
         max_num_retries = 0
         while max_num_retries < self.retry:
             self.wait()
-            if hasattr(self, 'keys'):
-                with Lock():
+
+            with Lock():
+                if len(self.invalid_keys) == len(self.keys):
+                    raise RuntimeError('All keys have insufficient quota.')
+
+                # find the next valid key
+                while True:
                     self.key_ctr += 1
                     if self.key_ctr == len(self.keys):
                         self.key_ctr = 0
-                header = {
-                    'Authorization': f'Bearer {self.keys[self.key_ctr]}',
-                    'content-type': 'application/json',
-                }
+
+                    if self.keys[self.key_ctr] not in self.invalid_keys:
+                        break
+
+                key = self.keys[self.key_ctr]
+
+            header = {
+                'Authorization': f'Bearer {key}',
+                'content-type': 'application/json',
+            }
+
             if self.orgs:
                 with Lock():
                     self.org_ctr += 1
@@ -188,10 +217,19 @@ class OpenAI(BaseAPIModel):
             except requests.JSONDecodeError:
                 self.logger.error('JsonDecode error, got',
                                   str(raw_response.content))
+                continue
             try:
                 return response['choices'][0]['message']['content'].strip()
             except KeyError:
                 if 'error' in response:
+                    if response['error']['code'] == 'rate_limit_exceeded':
+                        time.sleep(1)
+                        continue
+                    elif response['error']['code'] == 'insufficient_quota':
+                        self.invalid_keys.add(key)
+                        self.logger.warn(f'insufficient_quota key: {key}')
+                        continue
+
                     self.logger.error('Find error message in response: ',
                                       str(response['error']))
             max_num_retries += 1

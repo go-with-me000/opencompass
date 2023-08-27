@@ -173,7 +173,8 @@ class Summarizer:
             row = [dataset_abbr, prompt_version.get(dataset_abbr, '-'), metric, dataset_eval_mode.get(dataset_abbr, '-')]
             for model_abbr in model_abbrs:
                 if dataset_abbr in parsed_results[model_abbr]:
-                    row.append('{:.02f}'.format(parsed_results[model_abbr][dataset_abbr][index]))
+                    if index == 0:
+                        row.append('{:.02f}'.format(parsed_results[model_abbr][dataset_abbr][index]))
                 else:
                     row.append('-')
             table.append(row)

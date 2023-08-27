@@ -43,8 +43,8 @@ class LLM(BaseModel):
 
     def _load_tokenizer(self, tokenizer_path: str, tokenizer_type: str,
                         max_seq_len: int):
-        from trainllm.load_model import LLMTokenizer
         from sentencepiece import SentencePieceProcessor
+        from trainllm.load_model import LLMTokenizer
         tokenizer = SentencePieceProcessor()
         tokenizer.load(tokenizer_path)
         tokenizer = LLMTokenizer(tokenizer,
@@ -223,3 +223,57 @@ class LLMv3(LLM):
             tokenizer_path=tokenizer_path,
             tokenizer_type=tokenizer_type,
             module=module)
+
+
+class LLMv4(LLM):
+
+    def __init__(self,
+                 path: str,
+                 max_seq_len: int = 2048,
+                 tokenizer_only: bool = False,
+                 model_type: Optional[str] = 'converted',
+                 tokenizer_path: Optional[str] = None,
+                 tokenizer_type: Optional[str] = None,
+                 meta_template: Optional[Dict] = None):
+        assert model_type in [
+            'origin', 'converted'
+        ], 'The model type provided is invalid. Please ensure that the model type is either origin or converted. '  # noqa: E501
+
+        if tokenizer_only:
+            self._load_tokenizer(tokenizer_path=tokenizer_path,
+                                 tokenizer_type=tokenizer_type,
+                                 max_seq_len=max_seq_len)
+        else:
+            self._load_model(path=path,
+                             max_seq_len=max_seq_len,
+                             model_type=model_type,
+                             tokenizer_path=tokenizer_path,
+                             tokenizer_type=tokenizer_type)
+        self.template_parser = LMTemplateParser(meta_template)
+        self.eos_token_id = None
+        if meta_template and 'eos_token_id' in meta_template:
+            self.eos_token_id = meta_template['eos_token_id']
+
+    def _load_model(self,
+                    path: str,
+                    max_seq_len: int,
+                    model_type: Optional[str] = None,
+                    tokenizer_path: Optional[str] = None,
+                    tokenizer_type: Optional[str] = None):
+        from trainllm.load_model import load_llm
+        from trainllm.model4.converted_llama2.packed_pipeline_flash_converted_llama1d2 import \
+            Packed_Flash_Converted_LLAMA_exlarge_pipeline_1D2  # noqa: E501
+        from trainllm.model4.llama.packed_pipeline_flash_llama1d import \
+            Packed_Flash_LLAMA_exlarge_pipeline_1D
+        module = None
+        if model_type == 'origin':
+            module = Packed_Flash_LLAMA_exlarge_pipeline_1D
+        elif model_type == 'converted':
+            module = Packed_Flash_Converted_LLAMA_exlarge_pipeline_1D2
+        self.model, self.tokenizer, self.generator, _ = load_llm(
+            path,
+            max_seq_len,
+            tokenizer_path=tokenizer_path,
+            tokenizer_type=tokenizer_type,
+            module=module)
+

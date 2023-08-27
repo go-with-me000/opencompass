@@ -48,13 +48,13 @@ ocnli_fc_datasets = [
         reader_cfg=ocnli_fc_reader_cfg,
         infer_cfg=ocnli_fc_infer_cfg,
         eval_cfg=ocnli_fc_eval_cfg),
-    dict(
-        type=HFDataset,
-        abbr='ocnli_fc-test',
-        path='json',
-        split='train',
-        data_files='./data/FewCLUE/ocnli/test_public.json',
-        reader_cfg=ocnli_fc_reader_cfg,
-        infer_cfg=ocnli_fc_infer_cfg,
-        eval_cfg=ocnli_fc_eval_cfg)
+    # dict(
+    #     type=HFDataset,
+    #     abbr='ocnli_fc-test',
+    #     path='json',
+    #     split='train',
+    #     data_files='./data/FewCLUE/ocnli/test_public.json',
+    #     reader_cfg=ocnli_fc_reader_cfg,
+    #     infer_cfg=ocnli_fc_infer_cfg,
+    #     eval_cfg=ocnli_fc_eval_cfg)
 ]

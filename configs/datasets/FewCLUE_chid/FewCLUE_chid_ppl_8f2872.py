@@ -33,13 +33,13 @@ chid_datasets = [
         reader_cfg=chid_reader_cfg,
         infer_cfg=chid_infer_cfg,
         eval_cfg=chid_eval_cfg),
-    dict(
-        type=CHIDDataset,
-        path='json',
-        abbr='chid-test',
-        data_files='./data/FewCLUE/chid/test_public.json',
-        split='train',
-        reader_cfg=chid_reader_cfg,
-        infer_cfg=chid_infer_cfg,
-        eval_cfg=chid_eval_cfg),
+    # dict(
+    #     type=CHIDDataset,
+    #     path='json',
+    #     abbr='chid-test',
+    #     data_files='./data/FewCLUE/chid/test_public.json',
+    #     split='train',
+    #     reader_cfg=chid_reader_cfg,
+    #     infer_cfg=chid_infer_cfg,
+    #     eval_cfg=chid_eval_cfg),
 ]

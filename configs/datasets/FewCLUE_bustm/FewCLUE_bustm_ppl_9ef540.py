@@ -22,22 +22,22 @@ bustm_infer_cfg = dict(
 bustm_eval_cfg = dict(evaluator=dict(type=AccEvaluator))
 
 bustm_datasets = [
-    # dict(
-    #     type=HFDataset,
-    #     abbr='bustm-dev',
-    #     path='json',
-    #     data_files='./data/FewCLUE/bustm/dev_few_all.json',
-    #     split='train',
-    #     reader_cfg=bustm_reader_cfg,
-    #     infer_cfg=bustm_infer_cfg,
-    #     eval_cfg=bustm_eval_cfg),
     dict(
         type=HFDataset,
-        abbr='bustm-test',
+        abbr='bustm-dev',
         path='json',
-        data_files='./data/FewCLUE/bustm/test_public.json',
+        data_files='./data/FewCLUE/bustm/dev_few_all.json',
         split='train',
         reader_cfg=bustm_reader_cfg,
         infer_cfg=bustm_infer_cfg,
-        eval_cfg=bustm_eval_cfg)
+        eval_cfg=bustm_eval_cfg),
+    # dict(
+    #     type=HFDataset,
+    #     abbr='bustm-test',
+    #     path='json',
+    #     data_files='./data/FewCLUE/bustm/test_public.json',
+    #     split='train',
+    #     reader_cfg=bustm_reader_cfg,
+    #     infer_cfg=bustm_infer_cfg,
+    #     eval_cfg=bustm_eval_cfg)
 ]
