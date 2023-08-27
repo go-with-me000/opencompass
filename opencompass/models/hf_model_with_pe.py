@@ -1,23 +1,5 @@
-# coding=utf-8
-# Copyright 2022 EleutherAI and the HuggingFace Inc. team. All rights reserved.
-#
-# This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
-# and OPT implementations in this library. It has been modified from its
-# original forms to accommodate minor architectural differences compared
-# to GPT-NeoX and OPT used by the Meta AI team that trained the model.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-""" PyTorch LLaMA model."""
+# https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/modeling_llama.py
+
 import math
 import numpy as np
 from typing import List, Optional, Tuple, Union
@@ -121,40 +103,34 @@ class RotaryPositionEmbedding(nn.Module):
         else:
             alpha = self.pe_config['ntk_alpha'] if self.pe_config['ntk_option'] == 'fixed' else 1
             if self.pe_config['1d']:
-                base = 10000.0 * alpha ** (self.head_dim / (self.head_dim - 1))
+                base = self.pe_config['base'] * alpha ** (self.head_dim / (self.head_dim - 1))
                 omega = 1.0 / (base ** (np.arange(0, head_dim, 1) / head_dim))
             else:
-                base = 10000.0 * alpha ** (self.head_dim / (self.head_dim - 2))
+                base = self.pe_config['base'] * alpha ** (self.head_dim / (self.head_dim - 2))
                 omega = 1.0 / (base ** (np.arange(0, head_dim, 2) / head_dim))
                 omega = np.stack([omega, omega], axis=-1).reshape((head_dim)) if pe_config['interleave'] else np.concatenate([omega, omega], axis=-1)
-            omega = omega[None, None, None, :]
+            omega = omega[None, None, None, :] / self.pe_config['pi_lambda']
             expos = np.ones_like(omega)
         self.register_buffer("omega", torch.tensor(omega), persistent=False)
         self.register_buffer("expos", torch.tensor(np.sqrt(expos)), persistent=False)
-
-        if self.pe_config['exp']:
-            if self.pe_config['imp']:
-                scale = - np.log(omega) / np.log(10000.0) * head_dim
-            else:
-                scale = np.arange(0, head_dim, 1 if self.pe_config['1d'] else 2)
-                scale = scale if self.pe_config['1d'] else np.concatenate([scale, scale], axis=-1)
-                scale = scale[None, None, None, :]
-            scale = (scale + 0.4 * head_dim) / (1.4 * head_dim)
-            self.register_buffer("scale", torch.tensor(scale), persistent=False)
             
         if self.pe_config['hf_interleave']:
             self.hf_interleave()
+            
+        if self.pe_config['exp']:
+            scale = - np.log(omega) / np.log(10000.0) * head_dim
+            scale = (scale + 0.4 * head_dim) / (1.4 * head_dim)
+            self.register_buffer("scale", torch.tensor(scale), persistent=False)
 
         # inv_freq = 1.0 / (10000.0 ** (
         #     torch.arange(0, head_dim, 2)[: (head_dim // 2)].float() / head_dim))
         # self.register_buffer('inv_freq', inv_freq)
         
     def hf_interleave(self):
-        assert self.pe_config['interleave']
-        self.omega = torch.cat([self.omega[..., 0::2], self.omega[..., 1::2]], dim=-1)
-        self.scale = torch.cat([self.scale[..., 0::2], self.scale[..., 1::2]], dim=-1)
-        self.expos = torch.cat([self.expos[..., 0::2], self.expos[..., 1::2]], dim=-1)
-        self.pe_config['interleave'] = False
+        if self.pe_config['interleave']:
+            self.omega = torch.cat([self.omega[..., 0::2], self.omega[..., 1::2]], dim=-1)
+            self.expos = torch.cat([self.expos[..., 0::2], self.expos[..., 1::2]], dim=-1)
+            self.pe_config['interleave'] = False
 
     def forward(self, query: torch.Tensor, key: torch.Tensor, position_ids):
         
