@@ -51,6 +51,8 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
     if len(commits) == 0:
         exit(0)
 
+    updated = False
+
     for commit in commits:
         print(f'Applying {commit.hexsha}...')
         # Check if commit touches any blacklisted file
@@ -76,7 +78,7 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
                 'git', 'apply', patch_file, '--3way', '--check'
                 ]
                 result = subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True)
-                if result.returncode == 0:
+                if result.returncode == 0 or commit.message.lower().startswith('[sync]'):
                     cmd = [
                     'git', 'am', '--abort'
                     ]
@@ -90,13 +92,15 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
         if status != 0:
             break
         else:
+            updated = True
             # Update .github_commit file
             with open(os.path.join(repo_path, '.github_commit'), 'w') as f:
                 f.write(commit.hexsha + '\n')
 
-    actor = Actor("bot", "bot@bot.com")
-    repo.index.add('.github_commit')
-    repo.index.commit('Update .github_commit', author=actor, committer=actor, skip_hooks=True)
+    if updated:
+        actor = Actor("bot", "bot@bot.com")
+        repo.index.add('.github_commit')
+        repo.index.commit('Update .github_commit', author=actor, committer=actor, skip_hooks=True)
 
     if status == 0:
         print('All patches applied successfully!')

@@ -95,7 +95,7 @@ process_branch:
     - git checkout github -b github_$CI_COMMIT_REF_NAME
     - git apply changes.patch || exit
     - rm changes.patch
-    - (git add . && git commit -m "$COMMIT_MESSAGE") || (git add . && git commit -m "$COMMIT_MESSAGE")  # in case of linting error
+    - (git add . && git commit -m "[Sync] $COMMIT_MESSAGE") || (git add . && git commit -m "[Sync] $COMMIT_MESSAGE")  # in case of linting error
 
     - git remote set-url origin https://oauth2:$GIT_ACCESS_TOKEN@gitlab.pjlab.org.cn/openmmlab/bigmodel/opencompass.git
     - git push origin github_$CI_COMMIT_REF_NAME -f
