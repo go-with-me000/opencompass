@@ -23,6 +23,7 @@ lint:       # This job runs in the build stage, which runs first.
   tags:
     - opencompass
   script:
+    - pip install mmengine
     - pre-commit run --all-files -c .pre-commit-config-zh-cn.yaml
 
 pull_github:       # This job runs in the build stage, which runs first.
