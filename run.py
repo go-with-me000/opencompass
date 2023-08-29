@@ -189,6 +189,7 @@ def check_model_accessibility(model_cfgs, logger):
 
 # INTERNAL_END
 
+
 def parse_hf_args(hf_parser):
     """These args are all for the quick construction of HuggingFace models."""
     hf_parser.add_argument('--hf-path', type=str)
