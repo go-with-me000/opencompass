@@ -72,17 +72,10 @@ def patch_branch(source_branch, target_branch, lark_url, repo_path='.'):
         # Try to apply the patch
         for patch_file in patch_files:
             try:
-                repo.git.am(patch_file)
+                repo.git.am(patch_file, '--3way')
             except Exception as e:
-                cmd = [
-                'git', 'apply', patch_file, '--3way', '--check'
-                ]
-                result = subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True)
-                if result.returncode == 0 or commit.message.lower().startswith('[sync]'):
-                    cmd = [
-                    'git', 'am', '--abort'
-                    ]
-                    subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True)
+                repo.git.am('--abort')
+                if commit.message.lower().startswith('[sync]'):
                     continue
                 else:
                     status = f'Error applying patch for commit {commit.hexsha}. Exiting...'
