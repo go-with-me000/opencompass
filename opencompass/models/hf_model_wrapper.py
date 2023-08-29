@@ -57,7 +57,7 @@ class HuggingFaceFEPECausalLM(BaseModel):
                  tokenizer_path: Optional[str] = None,
                  tokenizer_kwargs: dict = dict(),
                  tokenizer_only: bool = False,
-                 model_kwargs: dict = dict(device_map='auto'),
+                 use_flash: bool = True,
                  meta_template: Optional[Dict] = None,
                  extract_pred_after_decode: bool = False,
                  batch_padding: bool = False):
@@ -79,7 +79,7 @@ class HuggingFaceFEPECausalLM(BaseModel):
             self._load_model(path=path,
                              model_path=model_path,
                              pe_config=pe_config,
-                             model_kwargs=model_kwargs)
+                             use_flash=use_flash)
 
     def _load_tokenizer(self, path: str, tokenizer_path: Optional[str],
                         tokenizer_kwargs: dict):
@@ -108,15 +108,20 @@ class HuggingFaceFEPECausalLM(BaseModel):
                     path: str,
                     model_path: str,
                     pe_config: dict,
-                    model_kwargs: dict):
+                    use_flash: bool = True):
         from opencompass.models.hf_model_with_pe import LlamaForCausalLM, LlamaConfig
         from collie.driver.io import PetrelIODriver
-        
-        state_dict = PetrelIODriver.load(path=model_path, mode='rb')
-        config = LlamaConfig.from_pretrained(pretrained_model_name_or_path=path)
-        config.torch_dtype = torch.bfloat16
-        self.model = LlamaForCausalLM(config=config, pe_config=pe_config)
-        self.model.load_state_dict(state_dict)
+        pe_config['use_flash'] = use_flash
+        if model_path.__contains__(':'):
+            state_dict = PetrelIODriver.load(path=model_path, mode='rb')
+            config = LlamaConfig.from_pretrained(pretrained_model_name_or_path=path)
+            config.torch_dtype = torch.bfloat16
+            self.model = LlamaForCausalLM(config=config, pe_config=pe_config)
+            self.model.load_state_dict(state_dict)
+        else:
+            pe_config['hf_interleave'] = False
+            self.model = LlamaForCausalLM.from_pretrained(model_path, pe_config=pe_config, 
+                                                          torch_dtype=torch.bfloat16)
         
         # model_kwargs.setdefault('torch_dtype', torch.float16)
         # self.model = LlamaForCausalLM.from_pretrained(path, pe_config, **model_kwargs)

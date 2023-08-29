@@ -5,10 +5,10 @@ from opencompass.runners import LocalRunner, SlurmRunner
 from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
-    from .datasets.collections.C_fepe import datasets
-    from .my_model.liuxiaoran import models
+    from .datasets.collections.C_fepe_short import datasets
+    from .my_model.fepe_short import models
 
-work_dir = './outputs/2023_08_21/'
+work_dir = './outputs/2023_08_28/'
 
 infer = dict(
     partitioner=dict(type=SizePartitioner, max_task_size=1000, gen_task_coef=15),

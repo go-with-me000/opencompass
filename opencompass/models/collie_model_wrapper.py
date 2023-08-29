@@ -96,8 +96,11 @@ class CollieModel(BaseModel):
             
     def _load_model(self, model_path: str, config: CollieConfig):
 
-        self.model = LlamaForCausalLM.from_pretrained(model_path_or_name=model_path, 
-                                                      protocol='petrel', config=config)
+        if model_path.__contains__(':'):
+            self.model = LlamaForCausalLM.from_pretrained(model_path_or_name=model_path, 
+                                                          protocol='petrel', config=config)
+        else:
+            self.model = LlamaForCausalLM.from_pretrained(model_path_or_name=model_path, config=config)
         self.model.eval().cuda()
 
 
@@ -143,12 +146,12 @@ class CollieModel(BaseModel):
         # step-2: conduct model forward to generate output
         generation_config = self.generation_config
         generation_config.max_new_tokens = max_out_len
-        self.logger.info('input_ids given')
+        # self.logger.info('input_ids given')
         outputs = self.model.generate(**tokens, generation_config=generation_config)
 
         if not self.extract_pred_after_decode:
             outputs = outputs[:, tokens['input_ids'].shape[1]:]
-        self.logger.info('outputs return')
+        # self.logger.info('outputs return')
         decodeds = self.tokenizer.batch_decode(outputs.cpu().tolist(), skip_special_tokens=True)
 
         if self.extract_pred_after_decode:
@@ -177,12 +180,12 @@ class CollieModel(BaseModel):
         
         generation_config = self.generation_config
         generation_config.max_new_tokens = max_out_len
-        self.logger.info('input_ids give')
+        # self.logger.info('input_ids give')
         outputs = self.model.generate(input_ids=input_ids, generation_config=generation_config)
 
         if not self.extract_pred_after_decode:
             outputs = outputs[:, input_ids.shape[1]:]
-        self.logger.info('outputs return')
+        # self.logger.info('outputs return')
         decodeds = self.tokenizer.batch_decode(outputs.cpu().tolist(), skip_special_tokens=True)
 
         if self.extract_pred_after_decode:

@@ -3,7 +3,6 @@
 import os
 import gc
 import json
-import datetime
 
 import numpy as np
 
@@ -68,14 +67,14 @@ class RotaryPositionEmbedding(nn.Module):
         else:
             alpha = self.pe_config['ntk_alpha'] if self.pe_config['ntk_option'] == 'fixed' else 1
             if self.pe_config['1d']:
-                base = self.pe_config['base'] * alpha ** (self.head_dim / (self.head_dim - 1))
+                base = 10000.0 * alpha ** (self.head_dim / (self.head_dim - 1))
                 omega = 1.0 / (base ** (np.arange(0, head_dim, 1) / head_dim))
             else:
-                base = self.pe_config['base'] * alpha ** (self.head_dim / (self.head_dim - 2))
+                base = 10000.0 * alpha ** (self.head_dim / (self.head_dim - 2))
                 omega = 1.0 / (base ** (np.arange(0, head_dim, 2) / head_dim))
                 omega = np.stack([omega, omega], axis=-1).reshape((head_dim))
                 # omega = np.concatenate([omega, omega], axis=-1)
-            omega = omega[None, None, None, :] / self.pe_config['pi_lambda']
+            omega = omega[None, None, None, :]
             expos = np.ones_like(omega)
         self.register_buffer("omega", torch.tensor(omega), persistent=False)
         self.register_buffer("expos", torch.tensor(np.sqrt(expos)), persistent=False)
@@ -85,8 +84,7 @@ class RotaryPositionEmbedding(nn.Module):
                 scale = - np.log(omega) / np.log(10000.0) * head_dim
             else:
                 scale = np.arange(0, head_dim, 1 if self.pe_config['1d'] else 2)
-                scale = scale if self.pe_config['1d'] else np.stack([scale, scale], axis=-1).reshape((head_dim))
-                # scale = scale if self.pe_config['1d'] else np.concatenate([scale, scale], axis=-1)
+                scale = scale if self.pe_config['1d'] else np.concatenate([scale, scale], axis=-1)
                 scale = scale[None, None, None, :]
             scale = (scale + 0.4 * head_dim) / (1.4 * head_dim)
             self.register_buffer("scale", torch.tensor(scale), persistent=False)
@@ -139,7 +137,7 @@ class RotaryPositionEmbedding(nn.Module):
             k_real = k_real / scale
 
         if self.pe_config['log']:
-            q_real = q_real * torch.clamp(torch.log(t+1) / math.log(self.pe_config['log_base']), min=self.pe_config['log_clip'])
+            q_real = q_real * torch.log(t+1) / math.log(self.pe_config['log_base'])
 
         # query = torch.view_as_complex(
         #     query.float().reshape(*query.shape[:-1], -1, 2))
@@ -264,8 +262,6 @@ class LlamaLayer(nn.Module):
                  attention_mask: Optional[torch.Tensor] = None,
                  past_key_values: Optional[torch.Tensor] = None,
                  **kwargs):
-        # logger.info('layer start')
-        # pre_time = datetime.datetime.now()
         if not self.training:
             self.hidden_states = hidden_states
         else:
@@ -281,12 +277,9 @@ class LlamaLayer(nn.Module):
         query, key, value = rearrange(query, "b n (h d) -> b n h d", d=self.head_dim), \
             rearrange(key, "b n (h d) -> b n h d", d=self.head_dim), \
             rearrange(value, "b n (h d) -> b n h d", d=self.head_dim)
-        # cur_time = datetime.datetime.now()
-        # logger.info('qkv count over, {}'.format(cur_time - pre_time))
-        # pre_time = cur_time            
+            
         if layer_past is not None:
-            # start_pos = layer_past[0].shape[2]
-            start_pos = layer_past[0].shape[1]
+            start_pos = layer_past[0].shape[2]
         else:
             start_pos = 0
         if self.num_key_value_groups > 1:
@@ -294,36 +287,27 @@ class LlamaLayer(nn.Module):
             value = torch.repeat_interleave(value, dim=2, repeats=self.num_key_value_groups)
         if layer_past is not None:
             # past_key: batch_size, num_heads, seq_len, head_dim
-            # past_key = layer_past[0].reshape(*layer_past[0].shape[:-1], 2, -1)\
-            #                         .permute(0, 2, 1, 4, 3) \
-            #                         .reshape(batch_size, start_pos,
-            #                                  self.num_key_value_heads, -1)
-            # query = torch.cat([past_key, query], dim=1)
-            # key = torch.cat([past_key, key], dim=1)
-            # value = torch.cat([layer_past[1].permute([0, 2, 1, 3]), value], dim=1)
-            query = torch.cat([layer_past[0], query], dim=1)
-            key = torch.cat([layer_past[0], key], dim=1)
-            value = torch.cat([layer_past[1], value], dim=1)
+            past_key = layer_past[0].reshape(*layer_past[0].shape[:-1], 2, -1)\
+                                    .permute(0, 2, 1, 4, 3) \
+                                    .reshape(batch_size, start_pos,
+                                             self.num_key_value_heads, -1)
+            query = torch.cat([past_key, query], dim=1)
+            key = torch.cat([past_key, key], dim=1)
+            value = torch.cat([layer_past[1].permute([0, 2, 1, 3]), value], dim=1)
         new_layer_past = None
         if self.use_cache and not self.training:
             # 调整成和 hf 兼容的格式，方便 prefix tuning
-            # present_key = key.reshape(*key.shape[:-1], -1, 2) \
-            #                  .permute(0, 2, 1, 4, 3) \
-            #                  .reshape(batch_size, self.num_key_value_heads,
-            #                           seq_len + start_pos, -1)
-            # new_layer_past = torch.stack((present_key, value.permute([0, 2, 1, 3])), dim=0)
-            new_layer_past = (key, value)
-        # cur_time = datetime.datetime.now()
-        # logger.info('qkv cache over, {}'.format(cur_time - pre_time))
-        # pre_time = cur_time            
-        query, key = self.self_attn["rotary_emb"](query, key, start_pos + seq_len)
+            present_key = key.reshape(*key.shape[:-1], -1, 2) \
+                             .permute(0, 2, 1, 4, 3) \
+                             .reshape(batch_size, self.num_key_value_heads,
+                                      seq_len + start_pos, -1)
+            new_layer_past = torch.stack((present_key, value.permute([0, 2, 1, 3])), dim=0)
+            
+        query, key = self.self_attn["rotary_emb"](query, key, seq_len)
         if self.config.pe_config['1d']:
             value = torch.cat([value, torch.zeros_like(value, device=value.device, dtype=value.dtype)], dim=-1)
         
         attention_mask = attention_mask if attention_mask is not None else torch.ones((query.shape[0], query.shape[1]), device='cuda')
-        # cur_time = datetime.datetime.now()
-        # logger.info('position embedding over, {}'.format(cur_time - pre_time))
-        # pre_time = cur_time            
         if self.config.use_flash:
             output = flash_attention(query, key, value, attention_mask, softmax_scale=1/math.sqrt(self.head_dim), half=self.config.pe_config['1d'])
         else:
@@ -347,9 +331,6 @@ class LlamaLayer(nn.Module):
             
             output = output.transpose(1, 2).contiguous().view(
                 batch_size, seq_len + start_pos, -1)
-        # cur_time = datetime.datetime.now()
-        # logger.info('self attention over, {}'.format(cur_time - pre_time))
-        # pre_time = cur_time            
         output = F.dropout(output, p=self.config.dropout,
                             training=self.training)
         output = output[:, start_pos:, :]
@@ -357,15 +338,9 @@ class LlamaLayer(nn.Module):
         _hidden_states = self.post_attention_layernorm(hidden_states)
         hidden_states = hidden_states + F.dropout(self.mlp["down_proj"](F.silu(self.mlp["gate_proj"](
             _hidden_states)) * self.mlp["up_proj"](_hidden_states)), p=self.config.dropout, training=self.training)
-        # cur_time = datetime.datetime.now()
-        # logger.info('return hidden, {}'.format(cur_time - pre_time))
         return hidden_states, new_layer_past
 
     def forward(self, inputs: dict):
-        # pre_time = datetime.datetime.now()
-        # cur_time = datetime.datetime.now()
-        # logger.info('forward start, {}'.format(cur_time - pre_time))
-        # pre_time = cur_time
         if self.config.checkpointing and self.training:
             hidden_states, new_layer_past = torch.utils.checkpoint.checkpoint(
                 self._forward,
@@ -375,24 +350,16 @@ class LlamaLayer(nn.Module):
             )
         else:
             hidden_states, new_layer_past = self._forward(**inputs)
-        # cur_time = datetime.datetime.now()
-        # logger.info('forward end, {}'.format(cur_time - pre_time))
-        # pre_time = cur_time
         inputs["hidden_states"] = hidden_states
         new_past_key_values = inputs.get("new_past_key_values", None)
-        # cur_time = datetime.datetime.now()
-        # logger.info('forward update, {}'.format(cur_time - pre_time))
-        # pre_time = cur_time        
         if new_layer_past is not None:
-            # new_layer_past.unsqueeze_(0)
+            new_layer_past.unsqueeze_(0)
             if new_past_key_values is None:
-                new_past_key_values = (new_layer_past, )
+                new_past_key_values = new_layer_past
             else:
-                new_past_key_values += (new_layer_past, )  # concat_tensor .to(new_layer_past.device)
+                new_past_key_values = concat_tensor([new_past_key_values, new_layer_past]).to(new_layer_past.device)
             inputs["new_past_key_values"] = new_past_key_values
-        # cur_time = datetime.datetime.now()
-        # logger.info('forward finish, {}'.format(cur_time - pre_time))
-        
+
         return inputs
 
 class LlamaModel(nn.Module):
@@ -424,21 +391,9 @@ class LlamaModel(nn.Module):
         if past_key_values is not None:
             inputs["past_key_values"] = past_key_values
         all_hidden_states = ()
-        # pre_time = datetime.datetime.now()
-        for i, layer in enumerate(self.layers):
+        for layer in self.layers:
             all_hidden_states += (inputs["hidden_states"],)
-            # cur_time = datetime.datetime.now()
-            # logger.info('layer {} start, {}'.format(i, cur_time - pre_time))
-            # pre_time = cur_time
-            temp = layer(inputs)
-            # cur_time = datetime.datetime.now()
-            # logger.info('layer {} end, {}'.format(i, cur_time - pre_time))
-            # pre_time = cur_time
-            inputs.update(temp)
-            # cur_time = datetime.datetime.now()
-            # logger.info('layer {} update, {}'.format(i, cur_time - pre_time))
-            # pre_time = cur_time
-
+            inputs.update(layer(inputs))
         inputs["hidden_states"] = self.norm(inputs["hidden_states"])
         all_hidden_states += (inputs["hidden_states"], )
 

@@ -3,6 +3,7 @@
 import math
 import numpy as np
 from typing import List, Optional, Tuple, Union
+import datetime
 
 import torch
 import torch.nn.functional as F
@@ -132,14 +133,14 @@ class RotaryPositionEmbedding(nn.Module):
             self.expos = torch.cat([self.expos[..., 0::2], self.expos[..., 1::2]], dim=-1)
             self.pe_config['interleave'] = False
 
-    def forward(self, query: torch.Tensor, key: torch.Tensor, position_ids):
+    def forward(self, query: torch.Tensor, key: torch.Tensor):
         
         dtype = query.dtype
         seq_len = query.shape[2]
         
         # batch_size, n_head (fixed for tp), seq_len, head_dim 
         
-        t = position_ids[:, None, :, None].float()
+        t = torch.arange(seq_len, device=query.device).reshape(1, 1, -1, 1).float()
         if self.pe_config['ntk_option'] == 'dynamic': 
             if self.pe_config['imp']:
                 raise KeyError('ntk for imp is not currently supported')
@@ -174,7 +175,7 @@ class RotaryPositionEmbedding(nn.Module):
             k_real = k_real / scale
 
         if self.pe_config['log']:
-            q_real = q_real * torch.log(t+1) / math.log(self.pe_config['log_base'])
+            q_real = q_real * torch.clamp(torch.log(t+1) / math.log(self.pe_config['log_base']), min=1)
 
         # query = torch.view_as_complex(
         #     query.float().reshape(*query.shape[:-1], -1, 2))
@@ -275,6 +276,8 @@ class LlamaAttention(nn.Module):
         use_cache: bool = False,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
         bsz, q_len, _ = hidden_states.size()
+        print('info', 'layer start')
+        pre_time = datetime.datetime.now()
 
         if self.pretraining_tp > 1:
             key_value_slicing = (self.num_key_value_heads * self.head_dim) // self.pretraining_tp
@@ -299,49 +302,83 @@ class LlamaAttention(nn.Module):
         query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
         value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        cur_time = datetime.datetime.now()
+        print('info', 'qkv count over, {}'.format(cur_time - pre_time))
+        pre_time = cur_time            
 
         kv_seq_len = key_states.shape[-2]
         if past_key_value is not None:
             kv_seq_len += past_key_value[0].shape[-2]
-        query_states, key_states = self.rotary_emb(query_states, key_states, position_ids)
 
         if past_key_value is not None:
             # reuse k, v, self_attention
             key_states = torch.cat([past_key_value[0], key_states], dim=2)
             value_states = torch.cat([past_key_value[1], value_states], dim=2)
+            if self.pe_config['use_flash']:
+                query_states = torch.cat([past_key_value[0], query_states], dim=2)
 
         past_key_value = (key_states, value_states) if use_cache else None
+        cur_time = datetime.datetime.now()
+        print('info', 'qkv cache over, {}'.format(cur_time - pre_time))
+        pre_time = cur_time            
+
+        query_states, key_states = self.rotary_emb(query_states, key_states)
 
         # repeat k/v heads if n_kv_heads < n_heads
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
+        
+        cur_time = datetime.datetime.now()
+        print('info', 'position embedding over, {}'.format(cur_time - pre_time))
+        pre_time = cur_time            
+        if self.pe_config['use_flash']:
+            if self.pe_config['1d']:
+                value_states = torch.cat([value_states, 
+                                          torch.zeros_like(value_states, device=value_states.device, dtype=value_states.dtype)], dim=-1)
+            dtype = value_states.dtype
+            query_states = query_states.transpose(1, 2).bfloat16()
+            key_states = key_states.transpose(1, 2).bfloat16()
+            value_states = value_states.transpose(1, 2).bfloat16()
+            attn_output = flash_attention(query_states, key_states, value_states, 
+                                          attention_mask, softmax_scale=1/math.sqrt(self.head_dim), 
+                                          half=self.pe_config['1d'])
+            attn_output = attn_output[:, -q_len:, ...]
+            attn_output = attn_output.contiguous().to(dtype)
+            attn_weights = None
+            
+        else:
 
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+            attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
-
-        if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
                 raise ValueError(
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                    f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                    f" {attn_weights.size()}"
                 )
-            attn_weights = attn_weights + attention_mask
 
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-        attn_output = torch.matmul(attn_weights, value_states)
+            if attention_mask is not None:
+                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                    raise ValueError(
+                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                    )
+                attn_weights = attn_weights + attention_mask
 
-        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-            raise ValueError(
-                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-                f" {attn_output.size()}"
-            )
+            # upcast attention to fp32
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+            attn_output = torch.matmul(attn_weights, value_states)
 
-        attn_output = attn_output.transpose(1, 2).contiguous()
+            if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+                raise ValueError(
+                    f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+                    f" {attn_output.size()}"
+                )
+
+            attn_output = attn_output.transpose(1, 2).contiguous()
+
+        cur_time = datetime.datetime.now()
+        print('info', 'self attention over, {}'.format(cur_time - pre_time))
+        pre_time = cur_time            
+        
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
 
         if self.pretraining_tp > 1:
@@ -354,6 +391,8 @@ class LlamaAttention(nn.Module):
         if not output_attentions:
             attn_weights = None
 
+        cur_time = datetime.datetime.now()
+        print('info', 'return hidden, {}'.format(cur_time - pre_time))
         return attn_output, attn_weights, past_key_value
 
 
@@ -543,6 +582,7 @@ class LlamaModel(LlamaPreTrainedModel):
 
     def __init__(self, config: LlamaConfig, pe_config):
         super().__init__(config)
+        self.pe_config = pe_config
         self.padding_idx = config.pad_token_id
         self.vocab_size = config.vocab_size
 
@@ -638,9 +678,10 @@ class LlamaModel(LlamaPreTrainedModel):
             attention_mask = torch.ones(
                 (batch_size, seq_length_with_past), dtype=torch.bool, device=inputs_embeds.device
             )
-        attention_mask = self._prepare_decoder_attention_mask(
-            attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
-        )
+        if not self.pe_config['use_flash']:
+            attention_mask = self._prepare_decoder_attention_mask(
+                attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
+            )
 
         hidden_states = inputs_embeds
 
@@ -996,3 +1037,40 @@ class LlamaForSequenceClassification(LlamaPreTrainedModel):
             hidden_states=transformer_outputs.hidden_states,
             attentions=transformer_outputs.attentions,
         )
+
+
+from einops import rearrange
+
+
+def flash_attention(query, key, value, attention_mask, softmax_scale=None, half=False):
+    """
+    应用 Flash Attention
+
+    :param query: batzh_size, seq_len, heads, head_dim
+    :param key: batzh_size, seq_len, heads, head_dim
+    :param value: batzh_size, seq_len, heads, head_dim
+    :param attetion_mask: batch_size, seq_len
+    """
+    import flash_attn
+    version = flash_attn.__version__.split('.')[0]
+    batch_size, seq_len, _, _ = query.shape
+    if int(version) < 2:
+        from flash_attn.flash_attention import FlashAttention
+        qkv = torch.stack([query, key, value], dim=2)
+        output, _ = FlashAttention()(qkv, causal=True)
+        output = rearrange(output, "b n h d -> b n (h d)")
+    else:
+        from flash_attn.flash_attn_interface import flash_attn_varlen_kvpacked_func
+        from flash_attn.bert_padding import unpad_input, pad_input
+        kv = torch.stack([key, value], dim=2)
+        q_unpad, indices, cu_seqlens_q, max_seqlen_q = unpad_input(query, attention_mask)
+        kv_unpad, indices, cu_seqlens_kv, max_seqlen_kv = unpad_input(kv, attention_mask)
+        output_unpad = flash_attn_varlen_kvpacked_func(
+            q_unpad, kv_unpad, cu_seqlens_q, cu_seqlens_kv, max_seqlen_q, max_seqlen_kv, 0.0, softmax_scale=softmax_scale, causal=True
+        )           
+        if half:
+            output_unpad = output_unpad[..., :output_unpad.shape[-1]//2]
+        output = pad_input(
+            rearrange(output_unpad, "nnz h d -> nnz (h d)"), indices,  batch_size, seq_len
+        )
+    return output
