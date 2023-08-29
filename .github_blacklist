@@ -34,3 +34,4 @@ configs/eval_hf_causal.py
 tests/openicl/test_base_retriever.py
 tests/partitioners/test_size.py
 configs/aliyun_env.py
+configs/models/internal_*
