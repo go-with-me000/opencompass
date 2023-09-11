@@ -152,10 +152,14 @@ def proxy_on():
 
 
 def convert2run(model_config, tokenizer_type):
-    model_config['dtype'] = torch.half if str(
-        model_config['dtype']) == 'torch.float16' else torch.bfloat16
-    model_config['parallel_output'] = False
-    model_config.pop('embed_fp32', None)
-    model_config.pop('init_std', None)
-    model_config.pop('other_std', None)
+    if model_config["dtype"] == "torch.bfloat16":
+        model_config["dtype"] = torch.bfloat16
+    elif model_config["dtype"] in ("torch.float16", "torch.half"):
+        model_config["dtype"] = torch.float16
+    elif model_config["dtype"] == "torch.float32":
+        model_config["dtype"] = torch.float32
+    elif model_config["dtype"] == "torch.tf32":
+        torch.backends.cudnn.allow_tf32 = True
+        torch.backends.cuda.matmul.allow_tf32 = True
+        model_config["dtype"] = torch.float32
     return model_config
