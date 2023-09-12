@@ -337,6 +337,15 @@ def main():
         summarizer = Summarizer(cfg)
         summarizer.summarize(time_str=cfg_time_str)
 
+    # INTERNAL_BEGIN
+    # upload results
+    if args.mode in ['all'] and not args.debug:
+        from opencompass.utils.internal.result_uploader import DatabaseReporter
+        reporter = DatabaseReporter(work_dir=cfg['work_dir'])
+        reporter.run_answer_dataset_id_mapping()
+        reporter.run_result()
+    # INTERNAL_END
+
 
 if __name__ == '__main__':
     main()

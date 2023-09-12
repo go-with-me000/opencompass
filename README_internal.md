@@ -56,6 +56,18 @@
 
    </details>
 
+5. 评测结果上传（可选）：
+
+   目前默认每次评测结束会将结果上传，如果不进行配置，则程序会有一些报错信息，如确实不需要进行结果上传，将这些信息无视即可。
+
+   ```bash
+   pip3 install -i https://test.pypi.org/simple/ openxlab -U
+   # 从 https://sso.openxlab.org.cn/usercenter 密钥管理中获取 AK / SK
+   python3 -m openxlab.cli config
+   ```
+
+   注意，在 `openxlab<=0.0.24` 时，openxlab 配置的 AK / SK 可能会过期，此时需要删除 `~/.openxlab` 下的文件，再进行重新配置才行。
+
 ## 配置
 
 将数据集下载或软链到 `./data` 处

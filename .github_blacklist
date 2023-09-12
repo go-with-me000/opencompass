@@ -35,3 +35,4 @@ tests/openicl/test_base_retriever.py
 tests/partitioners/test_size.py
 configs/aliyun_env.py
 configs/models/internal_*
+tools/result_uploader.py
