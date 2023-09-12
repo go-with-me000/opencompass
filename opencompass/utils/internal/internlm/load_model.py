@@ -73,14 +73,16 @@ def load_llm(checkpoint,
         },
         'parallel': dict(zero1=0, pipeline=dict(size=1), tensor=TP),
     }
-    if model_config_path is None:
-        # internlm.launch_from_torch(config=model_context, seed=42)
-        internlm.initialize.initialize_distributed_env(config=model_context,
-                                                       launcher='torch',
-                                                       args_check=False)
+    if hasattr(internlm.initialize, 'initialize_distributed_env'):
+        if model_config_path is None:
+            internlm.initialize.initialize_distributed_env(config=model_context, launcher="torch", args_check=False)
+        else:
+            internlm.initialize.initialize_distributed_env(config=model_config_path, launcher="torch", args_check=False)
     else:
-        internlm.initialize.initialize_distributed_env(
-            config=model_config_path, launcher='torch', args_check=False)
+        if model_config_path is None:
+            internlm.launch_from_torch(config=model_context, seed=42, args_check=False)
+        else:
+            internlm.launch_from_torch(config=model_config_path, seed=42, args_check=False)
     # print args info
     tp_rank = gpc.get_local_rank(ParallelMode.TENSOR)
     if tp_rank == 0:
@@ -126,9 +128,12 @@ def load_llm(checkpoint,
     load_info = model.load_state_dict(states, strict=False)
     if tp_rank == 0:
         print(load_info)
-        # if load_info.missing_keys:
-        #     exit(-1)
-    model = model.half().eval().cuda()
+        if load_info.missing_keys:
+            exit(-1)
+    if model_config["dtype"] == torch.float32:
+        model = model.eval().cuda()
+    else:
+        model = model.half().eval().cuda()
 
     torch.distributed.barrier()
     use_mask = False

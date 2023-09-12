@@ -9,6 +9,7 @@ from opencompass.models.base import BaseModel, LMTemplateParser
 
 module_info = {
     'LLAMA': ('model.modeling_llama', 'build_model_with_cfg'),
+    "LLAMA2": ("internlm.model.modeling_llama", "build_model_with_cfg"),
 }
 
 
