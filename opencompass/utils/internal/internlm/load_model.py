@@ -10,6 +10,7 @@ import torch
 from fairscale.nn.model_parallel.initialize import initialize_model_parallel
 from internlm.core.context import ParallelMode
 from internlm.core.context import global_context as gpc
+from internlm.core.context import Config
 from llama import Llama, ModelArgs, Tokenizer, Transformer
 from sentencepiece import SentencePieceProcessor
 
@@ -77,6 +78,11 @@ def load_llm(checkpoint,
         if model_config_path is None:
             internlm.initialize.initialize_distributed_env(config=model_context, launcher="torch", args_check=False)
         else:
+            os.environ["CLUSTER_NAME"]='P'
+            config = Config.from_file(model_config_path)
+            config.parallel.zero1 = 0
+            config.parallel.sequence_parallel=False
+            config.model.parallel_output=False
             internlm.initialize.initialize_distributed_env(config=model_config_path, launcher="torch", args_check=False)
     else:
         if model_config_path is None:
