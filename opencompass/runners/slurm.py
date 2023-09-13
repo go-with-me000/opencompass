@@ -33,21 +33,24 @@ class SlurmRunner(BaseRunner):
         lark_bot_url (str): Lark bot url. Defaults to None.
     """
 
-    def __init__(self,
-                 task: ConfigDict,
-                 max_num_workers: int = 32,
-                 retry: int = 2,
-                 partition: str = None,
-                 quotatype: str = None,
-                 qos: str = None,
-                 debug: bool = False,
-                 lark_bot_url: str = None):
+    def __init__(
+            self,
+            task: ConfigDict,
+            task_prefix: str = '',  # INTERNAL
+            max_num_workers: int = 32,
+            retry: int = 2,
+            partition: str = None,
+            quotatype: str = None,
+            qos: str = None,
+            debug: bool = False,
+            lark_bot_url: str = None):
         super().__init__(task=task, debug=debug, lark_bot_url=lark_bot_url)
         self.max_num_workers = max_num_workers
         self.retry = retry
         self.partition = partition
         self.quotatype = quotatype
         self.qos = qos
+        self.task_prefix = task_prefix  # INTERNAL
 
     def launch(self, tasks: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
         """Launch multiple tasks.
@@ -87,6 +90,7 @@ class SlurmRunner(BaseRunner):
         task = task_type(task_cfg)
         num_gpus = task.num_gpus
         task_name = task.name
+        task_name = self.task_prefix + task_name  # INTERNAL
 
         # Dump task config to file
         mmengine.mkdir_or_exist('tmp/')

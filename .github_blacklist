@@ -36,3 +36,4 @@ tests/partitioners/test_size.py
 configs/aliyun_env.py
 configs/models/internal_*
 tools/result_uploader.py
+tools/internal/*

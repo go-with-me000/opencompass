@@ -141,6 +141,10 @@ def fill_infer_cfg(cfg, args):
         new_cfg['infer']['runner']['quotatype'] = args.quotatype
         new_cfg['infer']['runner']['qos'] = args.qos
         new_cfg['infer']['runner']['retry'] = args.retry
+        # INTERNAL_BEGIN
+        if 'task_id' in cfg:
+            new_cfg['infer']['runner']['task_prefix'] = cfg['task_id']
+        # INTERNAL_END
     elif args.dlc:
         new_cfg['infer']['runner']['type'] = get_config_type(DLCRunner)
         new_cfg['infer']['runner']['aliyun_cfg'] = Config.fromfile(
@@ -168,6 +172,10 @@ def fill_eval_cfg(cfg, args):
         new_cfg['eval']['runner']['quotatype'] = args.quotatype
         new_cfg['eval']['runner']['qos'] = args.qos
         new_cfg['eval']['runner']['retry'] = args.retry
+        # INTERNAL_BEGIN
+        if 'task_id' in cfg:
+            new_cfg['eval']['runner']['task_prefix'] = cfg['task_id']
+        # INTERNAL_END
     elif args.dlc:
         new_cfg['eval']['runner']['type'] = get_config_type(DLCRunner)
         new_cfg['eval']['runner']['aliyun_cfg'] = Config.fromfile(
