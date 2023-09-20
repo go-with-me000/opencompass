@@ -63,6 +63,7 @@ process_branch:
     - opencompass
   script:
     # Extract the author info from the latst commit
+    - pip install mmengine
     - AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
     - AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae')
     - COMMIT_MESSAGE=$(git log -1 --pretty=%B)
