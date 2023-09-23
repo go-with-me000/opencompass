@@ -54,16 +54,21 @@ def _check_folder(folder):
 
 
 def _get_fns(folder):
-    return get_storage_manager().get_fns(folder)
 
+    fns = get_storage_manager().get_fns(folder)
+    fns2 = [fn.split("/")[-1] for fn in fns]
+
+    return fns2
 
 def load_with_progress_bar(fp, disable=True):
     client = Client()
-    stream = client.get(fp, enable_stream=True)
-    f = io.BytesIO()
-    for chunk in stream.iter_chunks(chunk_size=8192):
-        f.write(chunk)
-    f.seek(0)
+    # stream = client.get(fp, enable_stream=True)
+    # f = io.BytesIO()
+    # for chunk in stream.iter_chunks(chunk_size=8192):
+    #     f.write(chunk)
+    # f.seek(0)
+    res = client.get(fp)
+    f = io.BytesIO(res)
     return f
 
 
@@ -78,7 +83,7 @@ def _auto_load_with_bar(fp, disable=True):
 
 
 def merge_pp_within_tp(folder, local_rank=None):
-    _check_folder(folder)
+    # _check_folder(folder)
     fns = _get_fns(folder)
 
     model_fns = []

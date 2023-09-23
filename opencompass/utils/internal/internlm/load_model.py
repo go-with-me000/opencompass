@@ -78,12 +78,19 @@ def load_llm(checkpoint,
         if model_config_path is None:
             internlm.initialize.initialize_distributed_env(config=model_context, launcher="torch", args_check=False)
         else:
-            os.environ["CLUSTER_NAME"]='P'
+            os.environ["JOB_NAME"]='test'
+            os.environ["CLUSTER_NAME"]='A800'
+            os.environ["TRAIN_FOLDER"]='test'
+            os.environ["VALID_FOLDER"]='test'
+            os.environ["TOTAL_STEP"] = '1000'
+            os.environ["SAVE_CKPT_FOLDER"]="test"
             config = Config.from_file(model_config_path)
             config.parallel.zero1 = 0
+            config.parallel.pipeline.size = 1
             config.parallel.sequence_parallel=False
             config.model.parallel_output=False
-            internlm.initialize.initialize_distributed_env(config=model_config_path, launcher="torch", args_check=False)
+            
+            internlm.initialize.initialize_distributed_env(config=config, launcher="torch", args_check=False)
     else:
         if model_config_path is None:
             internlm.launch_from_torch(config=model_context, seed=42, args_check=False)
