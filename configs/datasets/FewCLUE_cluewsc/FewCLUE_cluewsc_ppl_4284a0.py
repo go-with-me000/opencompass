@@ -9,6 +9,9 @@ cluewsc_reader_cfg = dict(
     output_column='answer')
 
 cluewsc_infer_cfg = dict(
+
+
+
     prompt_template=dict(
         type=PromptTemplate,
         template={
@@ -32,13 +35,13 @@ cluewsc_datasets = [
         reader_cfg=cluewsc_reader_cfg,
         infer_cfg=cluewsc_infer_cfg,
         eval_cfg=cluewsc_eval_cfg),
-    dict(
-        type=CluewscDataset,
-        path='json',
-        abbr='cluewsc-test',
-        data_files='./data/FewCLUE/cluewsc/test_public.json',
-        split='train',
-        reader_cfg=cluewsc_reader_cfg,
-        infer_cfg=cluewsc_infer_cfg,
-        eval_cfg=cluewsc_eval_cfg),
+    # dict(
+    #     type=CluewscDataset,
+    #     path='json',
+    #     abbr='cluewsc-test',
+    #     data_files='./data/FewCLUE/cluewsc/test_public.json',
+    #     split='train',
+    #     reader_cfg=cluewsc_reader_cfg,
+    #     infer_cfg=cluewsc_infer_cfg,
+    #     eval_cfg=cluewsc_eval_cfg),
 ]

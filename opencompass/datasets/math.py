@@ -148,11 +148,15 @@ class MATHEvaluator(BaseEvaluator):
             }
         correct = 0
         count = 0
+        outputs = []
         for i, j in zip(predictions, references):
+            output = {'pred': i, 'answers': j, 'right': False}
             count += 1
             if self.is_equiv(i, j):
                 correct += 1
-        result = {'accuracy': 100 * correct / count}
+                output['right'] = True
+            outputs.append(output)
+        result = {'accuracy': 100 * correct / count, 'outputs': outputs}
         return result
 
     def _fix_fracs(self, string):

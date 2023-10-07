@@ -5,7 +5,7 @@ from opencompass.openicl.icl_evaluator import AccEvaluator
 from opencompass.datasets import HFDataset
 
 CB_reader_cfg = dict(
-    input_columns=['premise', 'hypothesis'], output_column='label')
+    input_columns=['premise', 'hypothesis'], output_column='label', test_split="train")
 
 CB_infer_cfg = dict(
     prompt_template=dict(

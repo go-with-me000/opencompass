@@ -51,10 +51,14 @@ class NQEvaluator(BaseEvaluator):
             processed_predictions.append(prediction)
         processed_answers = [[general_postprocess(j).lower() for j in i]
                              for i in references]
-
+        outputs = []
         cnt = 0
         for pred, cand_ans in zip(processed_predictions, processed_answers):
+            output = {'pred': pred, 'answers': cand_ans, 'right': False}
             cnt += int(any([cand == pred for cand in cand_ans]))
+            if int(any([cand == pred for cand in cand_ans])):
+                output['right'] = True
+            outputs.append(output)
         score = cnt / len(predictions) * 100
 
-        return {'score': score}
+        return {'score': score, 'outputs': outputs}

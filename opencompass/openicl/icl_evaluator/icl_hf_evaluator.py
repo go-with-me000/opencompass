@@ -74,12 +74,35 @@ class HuggingfaceEvaluator(BaseEvaluator):
                 f'len(references): {len(references)}'
             }
         # use codes pre-downloaded to opencompass repo, avoid downloading
-        local_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'hf_metrics', self.metric + '.py')
-        if os.path.exists(local_path):
-            metric = evaluate.load(local_path)
+        # local_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        #                           'hf_metrics', self.metric + '.py')
+        # if os.path.exists(local_path):
+        #     metric = evaluate.load(local_path)
+        # else:
+        #     metric = evaluate.load(self.metric)
+        import os
+        if os.path.exists('/cpfs01/'):
+            path = self.metric
+            if self.metric == 'accuracy':
+                path = '/cpfs01/shared/public/chenkeyu1/metrics/accuracy/accuracy.py'  # noqa: E501
+            elif self.metric == 'rouge':
+                path = '/cpfs01/shared/public/chenkeyu1/metrics/rouge/rouge.py'  # noqa: E501
+            metric = evaluate.load(path)
+        elif os.path.exists('/fs-computility/'):
+            path = self.metric
+            if self.metric == 'accuracy':
+                path = '/fs-computility/llm/shared/chenkeyu1/metrics/accuracy.py'  # noqa: E501
+            elif self.metric == 'rouge':
+                path = '/fs-computility/llm/shared/chenkeyu1/metrics/rouge.py'
+            metric = evaluate.load(path)
         else:
-            metric = evaluate.load(self.metric)
+            path = self.metric
+            if self.metric == 'accuracy':
+                path = '/mnt/petrelfs/share_data/chenkeyu1/metrics/accuracy.py'
+            elif self.metric == 'rouge':
+                path = '/mnt/petrelfs/share_data/chenkeyu1/metrics/rouge.py'
+            metric = evaluate.load(path)
+            # metric = evaluate.load(self.metric)
         scores = metric.compute(**self._preprocess(predictions, references))
         result = self._postprocess(scores)
         random.setstate(random_state)

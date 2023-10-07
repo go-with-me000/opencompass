@@ -40,26 +40,27 @@ class MBPPEvaluator(BaseEvaluator):
     def score(self, predictions, references):
         assert len(predictions) == len(references)
         predictions = [self._process_answer(pred) for pred in predictions]
-
+        outputs = []
         result = {'pass': 0, 'timeout': 0, 'failed': 0, 'wrong_answer': 0}
         for test_case, pred in zip(references, predictions):
             programs = self._process_test(test_case, pred)
+            output = {'pred': pred, 'answers': test_case, 'right': False}
             try:
-                # Add exec globals to prevent the exec to raise
-                # unnecessary NameError for correct answer
                 exec_globals = {}
                 with self.swallow_io():
                     with self.time_limit(2):
                         exec(programs, exec_globals)
                 result['pass'] += 1
+                output['right'] = True
             except TimeOutException:
                 result['timeout'] += 1
             except AssertionError:
                 result['wrong_answer'] += 1
             except BaseException:
                 result['failed'] += 1
-
+            outputs.append(output)
         result['score'] = result['pass'] / len(predictions) * 100
+        result['outputs'] = outputs
         return result
 
     def _process_answer(self, text):

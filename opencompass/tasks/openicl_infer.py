@@ -1,4 +1,5 @@
 import argparse
+import os
 import os.path as osp
 import random
 import time
@@ -13,6 +14,20 @@ from opencompass.tasks.base import BaseTask
 from opencompass.utils import (build_dataset_from_cfg, build_model_from_cfg,
                                get_infer_output_path, get_logger,
                                task_abbr_from_cfg)
+
+
+def proxy_enable(path):
+    if 's3://' in path:
+        os.environ[
+            'http_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+        os.environ[
+            'https_proxy'] = 'http://chenkeyu1:Cky13291983702@10.1.8.50:33128/'
+    elif '/cpfs01/' in path:
+        os.environ['http_proxy'] = 'http://58.34.83.134:31280/'
+        os.environ['https_proxy'] = 'http://58.34.83.134:31280/'
+    elif '/fs-computility/' in path:
+        os.environ['http_proxy'] = '100.66.27.20:3128'
+        os.environ['https_proxy'] = '100.66.27.20:3128'
 
 
 @TASKS.register_module(force=(__name__ == '__main__'))  # A hack for script run
@@ -58,7 +73,7 @@ class OpenICLInferTask(BaseTask):
             self.max_out_len = model_cfg.get('max_out_len', None)
             self.batch_size = model_cfg.get('batch_size', None)
             self.model = build_model_from_cfg(model_cfg)
-
+            proxy_enable(model_cfg['path'])
             for dataset_cfg in dataset_cfgs:
                 self.model_cfg = model_cfg
                 self.dataset_cfg = dataset_cfg

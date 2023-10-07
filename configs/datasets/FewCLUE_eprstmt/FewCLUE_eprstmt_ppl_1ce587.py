@@ -29,13 +29,13 @@ eprstmt_datasets = [
         reader_cfg=eprstmt_reader_cfg,
         infer_cfg=eprstmt_infer_cfg,
         eval_cfg=eprstmt_eval_cfg),
-    dict(
-        type=HFDataset,
-        abbr='eprstmt-test',
-        path='json',
-        data_files='./data/FewCLUE/eprstmt/test_public.json',
-        split='train',
-        reader_cfg=eprstmt_reader_cfg,
-        infer_cfg=eprstmt_infer_cfg,
-        eval_cfg=eprstmt_eval_cfg)
+    # dict(
+    #     type=HFDataset,
+    #     abbr='eprstmt-test',
+    #     path='json',
+    #     data_files='./data/FewCLUE/eprstmt/test_public.json',
+    #     split='train',
+    #     reader_cfg=eprstmt_reader_cfg,
+    #     infer_cfg=eprstmt_infer_cfg,
+    #     eval_cfg=eprstmt_eval_cfg)
 ]

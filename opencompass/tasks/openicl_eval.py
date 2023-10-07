@@ -1,12 +1,14 @@
 import argparse
 import copy
 import fnmatch
+import math
 import os.path as osp
 import random
+import statistics
 import time
 from collections import Counter
 from inspect import signature
-from typing import Optional
+from typing import List, Optional
 
 import mmengine
 from mmengine.config import Config, ConfigDict
@@ -16,6 +18,7 @@ from opencompass.openicl.icl_evaluator.lm_evaluator import LMEvaluator
 from opencompass.registry import (ICL_EVALUATORS, MODELS, TASKS,
                                   TEXT_POSTPROCESSORS)
 from opencompass.tasks.base import BaseTask
+from opencompass.tasks.openicl_infer import proxy_enable
 from opencompass.utils import (build_dataset_from_cfg, dataset_abbr_from_cfg,
                                get_infer_output_path, get_logger,
                                task_abbr_from_cfg)
@@ -70,7 +73,7 @@ class OpenICLEvalTask(BaseTask):
             for dataset_cfg in dataset_cfgs:
                 self.model_cfg = model_cfg
                 self.dataset_cfg = dataset_cfg
-
+                proxy_enable(model_cfg['path'])
                 # Load Dataset
                 self.eval_cfg = self.dataset_cfg.get('eval_cfg')
                 self.output_column = dataset_cfg['reader_cfg']['output_column']
@@ -129,10 +132,20 @@ class OpenICLEvalTask(BaseTask):
         else:
             if osp.exists(osp.realpath(filename)):
                 preds = mmengine.load(filename)
-                preds = [preds[str(i)] for i in range(len(preds))]
+                pred_predictions = [
+                    preds[str(i)]['prediction'] for i in range(len(preds))
+                ]
+                prompts = [
+                    preds[str(i)]['origin_prompt'] for i in range(len(preds))
+                    if 'origin_prompt' in preds[str(i)]
+                ]
+                pred_dicts = [preds[str(i)] for i in range(len(preds))]
             else:
                 filename = partial_filename
                 preds = []
+                pred_predictions = []
+                prompts = []
+                pred_dicts = []
                 i = 1
                 while osp.exists(osp.realpath(filename)):
                     sub_preds = mmengine.load(filename)
@@ -141,10 +154,24 @@ class OpenICLEvalTask(BaseTask):
                     filename = root + f'_{i}' + ext
                     i += 1
 
-            preds = {k: [pred.get(k) for pred in preds] for k in preds[0]}
+                    pred_predictions += [
+                        sub_preds[str(i)]['prediction']
+                        for i in range(len(sub_preds))
+                    ]
+                    prompts += [
+                        sub_preds[str(i)]['origin_prompt']
+                        for i in range(len(sub_preds))
+                        if 'origin_prompt' in sub_preds[str(i)]
+                    ]
+                    pred_dicts += [
+                        sub_preds[str(i)] for i in range(len(sub_preds))
+                    ]
 
-            pred_strs = preds.pop('prediction')
-
+            # preds = {k: [pred.get(k) for pred in preds] for k in preds[0]}
+            #
+            # pred_predictions = preds.pop('prediction')
+            origin_predictions = pred_dicts
+            origin_predictions2 = pred_predictions
             if ('pred_role' in self.eval_cfg
                     and 'meta_template' in self.model_cfg
                     and not MODELS.get(self.model_cfg['type']).is_api):
@@ -153,22 +180,22 @@ class OpenICLEvalTask(BaseTask):
                 parser = LMTemplateParser(self.model_cfg['meta_template'])
                 role = parser.roles[self.eval_cfg['pred_role']]
                 if sc_size is not None:
-                    for pred in pred_strs:
+                    for pred in pred_predictions:
                         if not isinstance(pred, list):
                             raise TypeError(
                                 'The prediction for Self-Consistency'
                                 'must be list.')
-                        pred_strs.append([
+                        pred_predictions.append([
                             self._extract_role_pred(sc_pred,
                                                     role.get('begin', None),
                                                     role.get('end', None))
                             for sc_pred in pred
                         ])
                 else:
-                    pred_strs = [
+                    pred_predictions = [
                         self._extract_role_pred(pred, role.get('begin', None),
                                                 role.get('end', None))
-                        for pred in pred_strs
+                        for pred in pred_predictions
                     ]
 
             # Postprocess predictions if necessary
@@ -178,15 +205,17 @@ class OpenICLEvalTask(BaseTask):
                 if isinstance(proc, str):
                     proc = TEXT_POSTPROCESSORS.get(proc)
                 if sc_size is not None:
-                    pred_strs = [[proc(s, **kwargs) for s in preds]
-                                 for preds in pred_strs]
+                    pred_predictions = [[proc(s, **kwargs) for s in preds]
+                                        for preds in pred_predictions]
                 else:
-                    pred_strs = [proc(s, **kwargs) for s in pred_strs]
+                    pred_predictions = [
+                        proc(s, **kwargs) for s in pred_predictions
+                    ]
 
             # Get majority voting predictions if use self-consistency
             if sc_size is not None:
-                pred_strs = [
-                    Counter(s).most_common(1)[0][0] for s in pred_strs
+                pred_predictions = [
+                    Counter(s).most_common(1)[0][0] for s in pred_predictions
                 ]
 
             if get_type_from_cfg(self.eval_cfg['evaluator']) == LMEvaluator:
@@ -198,14 +227,94 @@ class OpenICLEvalTask(BaseTask):
                 self.eval_cfg['evaluator']['dataset_cfg'] = self.dataset_cfg
                 self.eval_cfg['evaluator']['output_path'] = out_path
             icl_evaluator = ICL_EVALUATORS.build(self.eval_cfg['evaluator'])
-            preds['predictions'] = pred_strs
-            preds['references'] = (test_set[self.output_column]
-                                   if self.output_column else None)
-            preds = {
-                k: preds[k]
-                for k in signature(icl_evaluator.score).parameters
-            }
-            result = icl_evaluator.score(**preds)
+            # preds['predictions'] = pred_predictions
+            # preds['references'] = (test_set[self.output_column]
+            #                        if self.output_column else None)
+            # preds = {
+            #     k: preds[k]
+            #     for k in signature(icl_evaluator.score).parameters
+            # }
+            # result = icl_evaluator.score(**preds)
+            result = icl_evaluator.score(
+                predictions=pred_predictions,
+                references=test_set[self.output_column])
+
+            def get_results(origin_predictions, predictions, references,
+                            prompts, outputs, origin_predictions2):
+                results = {}
+                for i in range(len(predictions)):
+                    ppl_flag = False
+                    result = {}
+                    # if len(prompts) > 0:
+                    #     result['origin_prompt'] = prompts[i]
+                    origin_prediction = copy.deepcopy(origin_predictions[i])
+                    origin_prediction.pop('in-context examples', None)
+                    origin_prediction.pop('prediction', None)
+                    keys = copy.deepcopy(list(origin_prediction.keys()))
+                    for key in keys:
+
+                        if key.startswith('label:'):
+                            ppl_flag = True
+                            origin_prediction[key].pop('testing input', None)
+                            new_key = key.replace('label: ', '')
+                            origin_prediction[new_key] = origin_prediction.pop(
+                                key)
+
+                    if ppl_flag:
+                        results['type'] = 'PPL'
+                        result['origin_prediction'] = origin_prediction
+                        result['predictions'] = str(predictions[i])
+                        result['references'] = str(references[i])
+                        result['right'] = str(predictions[i]) == str(
+                            references[i])
+                    else:
+                        results['type'] = 'GEN'
+                        result['prompt'] = origin_prediction['origin_prompt']
+                        result['origin_prediction'] = origin_predictions2[i]
+                        result['predictions'] = outputs[i]['pred']
+                        result['references'] = outputs[i]['answers']
+                        result['right'] = outputs[i]['right']
+                    results[str(i)] = result
+                return results
+
+            outputs = result.pop('outputs', None)
+            result['outputs'] = get_results(origin_predictions,
+                                            pred_predictions,
+                                            test_set[self.output_column],
+                                            prompts, outputs,
+                                            origin_predictions2)
+            result['type'] = result['outputs'].pop('type', None)
+
+            def calculate_wrong_bpb(pred_dicts: List):
+                wrong_bpb_list = []
+                bpb_list = []
+                for pred_dict in pred_dicts:
+                    preds = {
+                        key: value
+                        for key, value in pred_dict.items()
+                        if key.startswith('label: ')
+                    }
+                    values = []
+                    for item in preds.items():
+                        values.append(item[1])
+                    bpbs = [value['BPB'] for value in values]
+                    wrong_bpb_list.append(
+                        (sum(bpbs) - min(bpbs)) / (len(bpbs) - 1))
+                    bpb_list.append(statistics.mean(bpbs))
+
+                def filters(origins):
+                    targets = [
+                        target for target in origins if not math.isnan(target)
+                    ]
+                    return targets
+
+                meanWR = statistics.mean(filters(wrong_bpb_list))
+                return meanWR
+
+            if 'PPL' in str(self.dataset_cfg.infer_cfg.inferencer.type):
+                result['wrong_bpb'] = calculate_wrong_bpb(pred_dicts)
+            else:
+                result['wrong_bpb'] = -1
 
         if 'error' in result:
             self.logger.error(

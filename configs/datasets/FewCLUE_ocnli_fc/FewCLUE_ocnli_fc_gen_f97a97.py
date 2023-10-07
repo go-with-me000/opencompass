@@ -31,14 +31,14 @@ ocnli_fc_eval_cfg = dict(
 )
 
 ocnli_fc_datasets = [
-    dict(
-        abbr="ocnli_fc-dev",
-        type=cmnliDataset_V2,  # ocnli_fc share the same format with cmnli
-        path="./data/FewCLUE/ocnli/dev_few_all.json",
-        reader_cfg=ocnli_fc_reader_cfg,
-        infer_cfg=ocnli_fc_infer_cfg,
-        eval_cfg=ocnli_fc_eval_cfg,
-    ),
+    # dict(
+    #     abbr="ocnli_fc-dev",
+    #     type=cmnliDataset_V2,  # ocnli_fc share the same format with cmnli
+    #     path="./data/FewCLUE/ocnli/dev_few_all.json",
+    #     reader_cfg=ocnli_fc_reader_cfg,
+    #     infer_cfg=ocnli_fc_infer_cfg,
+    #     eval_cfg=ocnli_fc_eval_cfg,
+    # ),
     dict(
         abbr="ocnli_fc-test",
         type=cmnliDataset_V2,  # ocnli_fc share the same format with cmnli

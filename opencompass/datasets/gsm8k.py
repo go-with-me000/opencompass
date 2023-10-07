@@ -1,3 +1,4 @@
+from opencompass.openicl import BaseEvaluator
 from opencompass.registry import TEXT_POSTPROCESSORS
 
 
@@ -26,3 +27,25 @@ def gsm8k_postprocess(text: str) -> str:
         if ret[i].isdigit():
             ret1 += ret[i]
     return ret1
+
+
+class gsm8kEvaluator(BaseEvaluator):
+
+    def score(self, predictions, references):
+        if len(predictions) != len(references):
+            return {
+                'error': 'predictions and references have different '
+                'length'
+            }
+        correct = 0
+        count = 0
+        outputs = []
+        for i, j in zip(predictions, references):
+            output = {'pred': i, 'answers': j, 'right': False}
+            count += 1
+            if i == j:
+                correct += 1
+                output['right'] = True
+            outputs.append(output)
+        result = {'accuracy': 100 * correct / count, 'outputs': outputs}
+        return result

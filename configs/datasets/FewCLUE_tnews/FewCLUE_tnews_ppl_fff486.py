@@ -36,13 +36,13 @@ tnews_datasets = [
         reader_cfg=tnews_reader_cfg,
         infer_cfg=tnews_infer_cfg,
         eval_cfg=tnews_eval_cfg),
-    dict(
-        type=TNewsDataset,
-        path='json',
-        abbr='tnews-test',
-        data_files='./data/FewCLUE/tnews/test_public.json',
-        split='train',
-        reader_cfg=tnews_reader_cfg,
-        infer_cfg=tnews_infer_cfg,
-        eval_cfg=tnews_eval_cfg)
+    # dict(
+    #     type=TNewsDataset,
+    #     path='json',
+    #     abbr='tnews-test',
+    #     data_files='./data/FewCLUE/tnews/test_public.json',
+    #     split='train',
+    #     reader_cfg=tnews_reader_cfg,
+    #     infer_cfg=tnews_infer_cfg,
+    #     eval_cfg=tnews_eval_cfg)
 ]

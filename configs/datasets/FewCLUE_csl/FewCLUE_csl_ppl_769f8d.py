@@ -33,13 +33,13 @@ csl_datasets = [
         reader_cfg=csl_reader_cfg,
         infer_cfg=csl_infer_cfg,
         eval_cfg=csl_eval_cfg),
-    dict(
-        type=CslDataset,
-        path='json',
-        abbr='csl_test',
-        data_files='./data/FewCLUE/csl/test_public.json',
-        split='train',
-        reader_cfg=csl_reader_cfg,
-        infer_cfg=csl_infer_cfg,
-        eval_cfg=csl_eval_cfg)
+    # dict(
+    #     type=CslDataset,
+    #     path='json',
+    #     abbr='csl_test',
+    #     data_files='./data/FewCLUE/csl/test_public.json',
+    #     split='train',
+    #     reader_cfg=csl_reader_cfg,
+    #     infer_cfg=csl_infer_cfg,
+    #     eval_cfg=csl_eval_cfg)
 ]

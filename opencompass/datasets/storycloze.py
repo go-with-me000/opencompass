@@ -3,6 +3,7 @@ from datasets import DatasetDict, load_dataset
 from opencompass.registry import LOAD_DATASET
 
 from .base import BaseDataset
+from .huggingface import get_local_datasets
 
 
 @LOAD_DATASET.register_module()
@@ -11,7 +12,8 @@ class storyclozeDataset(BaseDataset):
     @staticmethod
     def load(**kwargs):
         # special process
-        dataset = load_dataset(**kwargs, split='train+eval')
+        # dataset = load_dataset(**kwargs, split='train+eval')
+        dataset = get_local_datasets(split='train+eval', **kwargs)
 
         def preprocess(example):
             example['context'] = ' '.join([

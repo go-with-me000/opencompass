@@ -3,6 +3,7 @@ from datasets import load_dataset
 from opencompass.registry import LOAD_DATASET
 
 from .base import BaseDataset
+from .huggingface import get_local_datasets
 
 
 @LOAD_DATASET.register_module()
@@ -10,7 +11,8 @@ class piqaDataset_V2(BaseDataset):
 
     @staticmethod
     def load(**kwargs):
-        dataset = load_dataset(**kwargs)
+        # dataset = load_dataset(**kwargs)
+        dataset = get_local_datasets(**kwargs)
 
         def preprocess(example):
             assert isinstance(example['label'], int)
