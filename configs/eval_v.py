@@ -8,8 +8,9 @@ with read_base():
     # from .collections.base_small_pre import datasets
     # from .collections.C_plus import datasets
     # from .collections.example import datasets
-    pass
+    from .collections.base_small import datasets
 
+    from .models.model_10_07.models_volcano import models
     # from .models.huggingface import models
     # from .models.llama import models
 

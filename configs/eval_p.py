@@ -21,11 +21,11 @@ with read_base():
 work_dir = './outputs/2023_10_07/'
 
 infer = dict(
-    partitioner=dict(type=SizePartitioner, max_task_size=10000, gen_task_coef=10),
+    partitioner=dict(type=SizePartitioner, max_task_size=5000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,
-        max_num_workers=64,
+        max_num_workers=128,
         task=dict(type=OpenICLInferTask),
         retry=3),
 )
