@@ -14,7 +14,7 @@ with read_base():
     # from .models.huggingface import models
     # from .models.llama import models
 
-work_dir = './outputs/2023_09_28/'
+work_dir = './outputs/2023_10_07/'
 
 volcano_cfg = dict(
     bashrc_path="/fs-computility/llm/chenkeyu1/.bashrc",
