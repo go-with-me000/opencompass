@@ -3,9 +3,9 @@ from opencompass.models.internal import  InternLM
 
 models = [
     dict(
-        abbr='Qiansanqiang_7B_5.0.5_73000',
+        abbr='Qiansanqiang_7B_5.0.5_72000',
         type='opencompass.models.internal.InternLM',
-        path='/fs-computility/llm/shared/zhangshuo/ckpts/Qiansanqiang_7B_5.0.5/73000',
+        path='/fs-computility/llm/shared/zhangshuo/ckpts/Qiansanqiang_7B_5.0.5/72000',
         tokenizer_path='/fs-computility/llm/shared/llm_data/yanhang/tokenizers/llama.model',
         tokenizer_type='llama',
         module_path='/fs-computility/llm/shared/zhangshuo/develop/',
@@ -17,9 +17,9 @@ models = [
         run_cfg=dict(num_gpus=1, num_procs=1)
     ),
     dict(
-        abbr='Qiansanqiang_7B_5.0.4_73000',
+        abbr='Qiansanqiang_7B_5.0.4_72000',
         type='opencompass.models.internal.InternLM',
-        path='/fs-computility/llm/shared/zhangshuo/ckpts/Qiansanqiang_7B_5.0.4/73000',
+        path='/fs-computility/llm/shared/zhangshuo/ckpts/Qiansanqiang_7B_5.0.4/72000',
         tokenizer_path='/fs-computility/llm/shared/llm_data/yanhang/tokenizers/llama.model',
         tokenizer_type='llama',
         module_path='/fs-computility/llm/shared/zhangshuo/develop/',
@@ -31,9 +31,9 @@ models = [
         run_cfg=dict(num_gpus=1, num_procs=1)
     ),
     dict(
-        abbr='Qiansanqiang_7B_5.0.3_73000',
+        abbr='Qiansanqiang_7B_5.0.3_72000',
         type='opencompass.models.internal.InternLM',
-        path='/fs-computility/llm/shared/zhangshuo/ckpts/Qiansanqiang_7B_5.0.3/73000',
+        path='/fs-computility/llm/shared/zhangshuo/ckpts/Qiansanqiang_7B_5.0.3/72000',
         tokenizer_path='/fs-computility/llm/shared/llm_data/yanhang/tokenizers/llama.model',
         tokenizer_type='llama',
         module_path='/fs-computility/llm/shared/zhangshuo/develop/',

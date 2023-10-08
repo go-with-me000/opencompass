@@ -154,7 +154,7 @@ class Summarizer:
                 elif isinstance(item, (list, tuple)):
                     summarizer_dataset_abbrs.append((item[0], item[1]))
         table = []
-        checkpoints = [model_abbr.rsplit('_', 1)[1] for model_abbr in model_abbrs]
+        checkpoints = [model_abbr.rsplit('_', 1)[1] if '_' in model_abbr else model_abbr for model_abbr in model_abbrs]
         # model_abbrs = [model_abbr.rsplit("_", 1)[0] for model_abbr in model_abbrs]
         header = ['dataset', 'version', 'metric', 'mode'] + model_abbrs
         import datetime

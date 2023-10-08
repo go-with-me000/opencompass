@@ -10,11 +10,13 @@ with read_base():
     # from .collections.example import datasets
     from .collections.base_small import datasets
 
-    from .models.model_10_07.models_volcano import models
+    from .models.model_10_08.models_volcano import models
     # from .models.huggingface import models
     # from .models.llama import models
 
-work_dir = './outputs/2023_10_07/'
+    from .summarizers.small import summarizer
+
+work_dir = './outputs/2023_10_08/'
 
 volcano_cfg = dict(
     bashrc_path="/fs-computility/llm/chenkeyu1/.bashrc",

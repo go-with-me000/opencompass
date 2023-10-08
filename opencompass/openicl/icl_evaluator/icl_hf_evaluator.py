@@ -8,7 +8,7 @@ import numpy as np
 from opencompass.registry import ICL_EVALUATORS
 
 from .icl_base_evaluator import BaseEvaluator
-
+import os
 
 class HuggingfaceEvaluator(BaseEvaluator):
     """Use huggingface evaluate module to calculate the target metrics.
@@ -80,7 +80,7 @@ class HuggingfaceEvaluator(BaseEvaluator):
         #     metric = evaluate.load(local_path)
         # else:
         #     metric = evaluate.load(self.metric)
-        import os
+
         if os.path.exists('/cpfs01/'):
             path = self.metric
             if self.metric == 'accuracy':

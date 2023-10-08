@@ -38,12 +38,12 @@ eprstmt_datasets = [
         infer_cfg=eprstmt_infer_cfg,
         eval_cfg=eprstmt_eval_cfg,
     ),
-    dict(
-        abbr="eprstmt-test",
-        type=eprstmtDataset_V2,
-        path="./data/FewCLUE/eprstmt/test_public.json",
-        reader_cfg=eprstmt_reader_cfg,
-        infer_cfg=eprstmt_infer_cfg,
-        eval_cfg=eprstmt_eval_cfg,
-    ),
+    # dict(
+    #     abbr="eprstmt-test",
+    #     type=eprstmtDataset_V2,
+    #     path="./data/FewCLUE/eprstmt/test_public.json",
+    #     reader_cfg=eprstmt_reader_cfg,
+    #     infer_cfg=eprstmt_infer_cfg,
+    #     eval_cfg=eprstmt_eval_cfg,
+    # ),
 ]

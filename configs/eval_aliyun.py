@@ -11,12 +11,12 @@ with read_base():
 
 
     # from .models.llama import models
-    from .models.model_10_01.models_aliyun import models
+    from .models.model_10_08.models_aliyun import models
 
     from .summarizers.small import summarizer
 
 
-work_dir = './outputs/2023_10_05/'
+work_dir = './outputs/2023_10_08/'
 
 
 
@@ -48,6 +48,7 @@ eval = dict(
     runner=dict(
         type=DLCRunner,
         aliyun_cfg=alillm2_cfg,
+        # type=LocalRunner,
         max_num_workers=64,
         task=dict(type=OpenICLEvalTask),
 ),

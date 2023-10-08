@@ -12,20 +12,20 @@ with read_base():
 
     # from .models.huggingface import models
     # from .models.llama import models
-    from .models.model_10_07.models_p import models
+    from .models.model_10_08.models_p import models
 
     from .summarizers.small import summarizer
 
 
 
-work_dir = './outputs/2023_10_07/'
+work_dir = './outputs/2023_10_08/'
 
 infer = dict(
     partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,
-        max_num_workers=128,
+        max_num_workers=64,
         task=dict(type=OpenICLInferTask),
         retry=3),
 )

@@ -8,5 +8,6 @@ from .lark import *  # noqa
 from .logging import *  # noqa
 from .menu import *  # noqa
 from .prompt import *  # noqa
+# from .summarizer import *  # noqa
 from .summarizer_self import *  # noqa
 from .text_postprocessors import *  # noqa

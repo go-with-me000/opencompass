@@ -277,14 +277,6 @@ class OpenICLEvalTask(BaseTask):
                     results[str(i)] = result
                 return results
 
-            outputs = result.pop('outputs', None)
-            result['outputs'] = get_results(origin_predictions,
-                                            pred_predictions,
-                                            test_set[self.output_column],
-                                            prompts, outputs,
-                                            origin_predictions2)
-            result['type'] = result['outputs'].pop('type', None)
-
             def calculate_wrong_bpb(pred_dicts: List):
                 wrong_bpb_list = []
                 bpb_list = []
@@ -310,10 +302,20 @@ class OpenICLEvalTask(BaseTask):
 
                 meanWR = statistics.mean(filters(wrong_bpb_list))
                 return meanWR
+            try:
+                outputs = result.pop('outputs', None)
+                result['outputs'] = get_results(origin_predictions,
+                                                pred_predictions,
+                                                test_set[self.output_column],
+                                                prompts, outputs,
+                                                origin_predictions2)
+                result['type'] = result['outputs'].pop('type', None)
 
-            if 'PPL' in str(self.dataset_cfg.infer_cfg.inferencer.type):
-                result['wrong_bpb'] = calculate_wrong_bpb(pred_dicts)
-            else:
+                if 'PPL' in str(self.dataset_cfg.infer_cfg.inferencer.type):
+                    result['wrong_bpb'] = calculate_wrong_bpb(pred_dicts)
+                else:
+                    result['wrong_bpb'] = -1
+            except:
                 result['wrong_bpb'] = -1
 
         if 'error' in result:
