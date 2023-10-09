@@ -1,4 +1,4 @@
-configs/eval_p.py
+configs/
 output_*/
 outputs/
 icl_inference_output/
