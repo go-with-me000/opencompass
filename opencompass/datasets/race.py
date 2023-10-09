@@ -11,8 +11,9 @@ class RaceDataset(BaseDataset):
 
     @staticmethod
     def load(path: str, name: str):
-        # dataset = load_dataset(path, name)
-        dataset = get_local_datasets(path=path, name=name)
+        dataset = load_dataset(path, name)
+
+        # dataset = get_local_datasets(path=path, name=name)
 
         def preprocess(x):
             for ans, option in zip(['A', 'B', 'C', 'D'], x['options']):

@@ -7,8 +7,8 @@ from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 with read_base():
     # from .collections.base_small_pre import datasets
     # from .collections.C_plus import datasets
-    from .collections.example import datasets
-    # from .collections.base_small import datasets
+    # from .collections.example import datasets
+    from .collections.base_small import datasets
 
     from .models.model_10_08.models_volcano import models
     # from .models.huggingface import models
@@ -16,7 +16,7 @@ with read_base():
 
     from .summarizers.small import summarizer
 
-work_dir = './outputs/2023_10_08/'
+work_dir = './outputs/2023_10_09/'
 
 volcano_cfg = dict(
     bashrc_path="/fs-computility/llm/chenkeyu1/.bashrc",
@@ -33,8 +33,8 @@ volcano_eval_cfg = dict(
 )
 
 infer = dict(
-    # partitioner=dict(type=SizePartitioner, max_task_size=50000, gen_task_coef=10),
-    partitioner=dict(type='NaivePartitioner'),
+    partitioner=dict(type=SizePartitioner, max_task_size=50000, gen_task_coef=10),
+    # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=VOLCRunner,
         volcano_cfg=volcano_cfg,

@@ -16,8 +16,9 @@ class lambadaDataset(BaseDataset):
 
     @staticmethod
     def load(**kwargs):
-        # dataset = load_dataset(**kwargs, split='test')
-        dataset = get_local_datasets(split='test', **kwargs)
+        dataset = load_dataset(**kwargs, split='test')
+
+        # dataset = get_local_datasets(split='test', **kwargs)
 
         def preprocess(example):
             prompt, target = example['text'].strip().rsplit(' ', 1)

@@ -41,5 +41,5 @@ class HFDataset(BaseDataset):
 
     @staticmethod
     def load(**kwargs):
-        # return load_dataset(**kwargs)
-        return get_local_datasets(**kwargs)
+        return load_dataset(**kwargs)
+        # return get_local_datasets(**kwargs)

@@ -11,8 +11,9 @@ class piqaDataset_V2(BaseDataset):
 
     @staticmethod
     def load(**kwargs):
-        # dataset = load_dataset(**kwargs)
-        dataset = get_local_datasets(**kwargs)
+        dataset = load_dataset(**kwargs)
+
+        # dataset = get_local_datasets(**kwargs)
 
         def preprocess(example):
             assert isinstance(example['label'], int)

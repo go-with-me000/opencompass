@@ -9,6 +9,7 @@ configs/secrets.py
 configs/datasets/log.json
 configs/eval_debug*.py
 configs/viz_*.py
+configs/
 data
 work_dirs
 

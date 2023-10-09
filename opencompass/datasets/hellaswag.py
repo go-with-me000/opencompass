@@ -13,8 +13,9 @@ class hellaswagDataset(BaseDataset):
 
     @staticmethod
     def load(**kwargs):
-        # dataset = load_dataset(**kwargs)
-        dataset = get_local_datasets(**kwargs)
+        dataset = load_dataset(**kwargs)
+
+        # dataset = get_local_datasets(**kwargs)
 
         def preprocess(example):
             for i in range(4):

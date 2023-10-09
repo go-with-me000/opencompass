@@ -11,8 +11,9 @@ class commonsenseqaDataset(BaseDataset):
 
     @staticmethod
     def load(**kwargs):
-        # dataset = load_dataset(**kwargs)
-        dataset = get_local_datasets(**kwargs)
+        dataset = load_dataset(**kwargs)
+
+        # dataset = get_local_datasets(**kwargs)
 
         def pre_process(example):
             for i in range(5):
