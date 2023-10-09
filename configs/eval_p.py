@@ -6,8 +6,8 @@ from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
     # from .collections.C_plus import datasets
-    from .collections.example import datasets
-    # from .collections.base_small import datasets
+    # from .collections.example import datasets
+    from .collections.base_small import datasets
     # from .collections.base_small_pre import datasets
 
     # from .models.huggingface import models
@@ -21,7 +21,7 @@ with read_base():
 work_dir = './outputs/2023_10_09/'
 
 infer = dict(
-    partitioner=dict(type=SizePartitioner, max_task_size=3000, gen_task_coef=10),
+    partitioner=dict(type=SizePartitioner, max_task_size=20000, gen_task_coef=10),
     # partitioner=dict(type='NaivePartitioner'),
     runner=dict(
         type=SlurmRunner,

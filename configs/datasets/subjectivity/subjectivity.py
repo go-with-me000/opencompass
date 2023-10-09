@@ -5,7 +5,7 @@ from opencompass.openicl.icl_evaluator import LMEvaluator
 from opencompass.datasets.subjectivity import SubjectivityDataset
 
 subjectivity_reader_cfg = dict(
-    input_columns="input", output_column=None, train_split='test')
+    input_columns="input", output_column='output', train_split='test')
 
 subjectivity_all_sets = [
     "subjectivity",
@@ -21,7 +21,7 @@ for _name in subjectivity_all_sets:
             ]),
         ),
         retriever=dict(type=ZeroRetriever),
-        inferencer=dict(type=GenInferencer),
+        inferencer=dict(type=GenInferencer, max_out_len=100),
     )
 
     subjectivity_eval_cfg = dict(
