@@ -44,49 +44,49 @@ models = [
     #     batch_size=16,
     #     run_cfg=dict(num_gpus=2, num_procs=2)
     # ),
-    dict(
-        abbr="oppenheimer_7B_0.5.1_1000",
-        type=InternLM,
-        model_type="LLAMA_TF32",
-        path="s3://checkpoints_ssd_02/oppenheimer_7B_0.5.1/1000",
-        tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
-        tokenizer_type='v7',
-        module_path="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/",
-        model_config="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/configs/oppenheimer_7B_0.5.1.py",
-        max_out_len=100,
-        max_seq_len=2048,
-        batch_size=16,
-        run_cfg=dict(num_gpus=2, num_procs=2)
-    ),
-    dict(
-        abbr="oppenheimer_7B_0.5.1_2000",
-        type=InternLM,
-        model_type="LLAMA_TF32",
-        path="s3://checkpoints_ssd_02/oppenheimer_7B_0.5.1/2000",
-        tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
-        tokenizer_type='v7',
-        module_path="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/",
-        model_config="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/configs/oppenheimer_7B_0.5.1.py",
-        max_out_len=100,
-        max_seq_len=2048,
-        batch_size=16,
-        run_cfg=dict(num_gpus=2, num_procs=2)
-    ),
-    dict(
-        abbr="oppenheimer_7B_0.5.1_3000",
-        type=InternLM,
-        model_type="LLAMA_TF32",
-        path="s3://checkpoints_ssd_02/oppenheimer_7B_0.5.1/3000",
-        tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
-        tokenizer_type='v7',
-        module_path="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/",
-        model_config="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/configs/oppenheimer_7B_0.5.1.py",
-        max_out_len=100,
-        max_seq_len=2048,
-        batch_size=16,
-        run_cfg=dict(num_gpus=2, num_procs=2)
-    ),
-
+    # dict(
+    #     abbr="oppenheimer_7B_0.5.1_1000",
+    #     type=InternLM,
+    #     model_type="LLAMA_TF32",
+    #     path="s3://checkpoints_ssd_02/oppenheimer_7B_0.5.1/1000",
+    #     tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
+    #     tokenizer_type='v7',
+    #     module_path="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/",
+    #     model_config="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/configs/oppenheimer_7B_0.5.1.py",
+    #     max_out_len=100,
+    #     max_seq_len=2048,
+    #     batch_size=16,
+    #     run_cfg=dict(num_gpus=2, num_procs=2)
+    # ),
+    # dict(
+    #     abbr="oppenheimer_7B_0.5.1_2000",
+    #     type=InternLM,
+    #     model_type="LLAMA_TF32",
+    #     path="s3://checkpoints_ssd_02/oppenheimer_7B_0.5.1/2000",
+    #     tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
+    #     tokenizer_type='v7',
+    #     module_path="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/",
+    #     model_config="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/configs/oppenheimer_7B_0.5.1.py",
+    #     max_out_len=100,
+    #     max_seq_len=2048,
+    #     batch_size=16,
+    #     run_cfg=dict(num_gpus=2, num_procs=2)
+    # ),
+    # dict(
+    #     abbr="oppenheimer_7B_0.5.1_3000",
+    #     type=InternLM,
+    #     model_type="LLAMA_TF32",
+    #     path="s3://checkpoints_ssd_02/oppenheimer_7B_0.5.1/3000",
+    #     tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
+    #     tokenizer_type='v7',
+    #     module_path="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/",
+    #     model_config="/mnt/petrelfs/feizhaoye.dispatch/train_internlm_v0.1.2/configs/oppenheimer_7B_0.5.1.py",
+    #     max_out_len=100,
+    #     max_seq_len=2048,
+    #     batch_size=16,
+    #     run_cfg=dict(num_gpus=2, num_procs=2)
+    # ),
+    #
     # dict(
     #     abbr="oppenheimer_7B_0.6.1_1000",
     #     type=InternLM,
@@ -158,21 +158,21 @@ models = [
     #     batch_size=16,
     #     run_cfg=dict(num_gpus=2, num_procs=2)
     # ),
-    #
-    # dict(
-    #     abbr="1b_v5_28000",
-    #     type=InternLM,
-    #     model_type="LLAMA",
-    #     path="s3://checkpoints_ssd_02/wangbo/1B_v5/28000",
-    #     tokenizer_path='/mnt/petrelfs/share_data/wangbo/llama_small_V2.model',
-    #     tokenizer_type='llama',
-    #     module_path="/mnt/petrelfs/share_data/wangbo/train_internlm/",
-    #     model_config="/mnt/petrelfs/share_data/wangbo/1B_v4.py",
-    #     max_out_len=100,
-    #     max_seq_len=2048,
-    #     batch_size=16,
-    #     run_cfg=dict(num_gpus=1, num_procs=1)
-    # ),
+
+    dict(
+        abbr="1b_v5_28000",
+        type=InternLM,
+        model_type="LLAMA",
+        path="s3://checkpoints_ssd_02/wangbo/1B_v5/28000",
+        tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/llamav4.model',
+        tokenizer_type='v4',
+        module_path="/mnt/petrelfs/share_data/wangbo/train_internlm/",
+        model_config="/mnt/petrelfs/share_data/wangbo/1B_v5.py",
+        max_out_len=100,
+        max_seq_len=2048,
+        batch_size=16,
+        run_cfg=dict(num_gpus=1, num_procs=1)
+    ),
 ]
 #
 # for item in range(0, 5):

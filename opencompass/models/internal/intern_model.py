@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 import numpy as np
 import torch
+import os.path as osp
 
 from opencompass.models.base import BaseModel, LMTemplateParser
 
@@ -44,7 +45,7 @@ class InternLM(BaseModel):
                  model_type: Optional[str] = 'LLAMA',
                  meta_template: Optional[Dict] = None):
         sys.path.append(module_path)
-        sys.path.append(module_path + 'internlm/')
+        sys.path.append(osp.join(module_path, 'internlm/'))
         if tokenizer_only:
             self._load_tokenizer(tokenizer_path=tokenizer_path,
                                  tokenizer_type=tokenizer_type,

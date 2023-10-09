@@ -9,9 +9,9 @@ with read_base():
     # from .collections.example import datasets
     from .collections.base_small import datasets
 
-
+    from .models.huggingface import models
     # from .models.llama import models
-    from .models.model_10_08.models_aliyun import models
+    # from .models.model_10_08.models_aliyun import models
 
     from .summarizers.small import summarizer
 
@@ -39,7 +39,7 @@ infer = dict(
         # type=LocalRunner,
         max_num_workers=64,
         task=dict(type=OpenICLInferTask),
-        # retry=3
+        retry=3
     ),
 )
 
@@ -51,6 +51,7 @@ eval = dict(
         # type=LocalRunner,
         max_num_workers=64,
         task=dict(type=OpenICLEvalTask),
+        retry=3
 ),
 )
 
