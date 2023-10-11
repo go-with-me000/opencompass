@@ -119,6 +119,12 @@ def merge_pp_within_tp(folder, local_rank=None):
                 layer_idx = int(key[s + 1:e - 1]) + layer_shift
                 _layer_shift = max(_layer_shift, int(key[s + 1:e - 1]))
                 name = key[:s] + f'.{layer_idx}.' + key[e:]
+                # tp_states[name] = states[key]
+                # if 'w2' in name:
+                #     tp_states[name.replace('w2', 'w3')] = states[key]
+                # elif 'w3' in name:
+                #     tp_states[name.replace('w3', 'w2')] = states[key]
+                # else:
                 tp_states[name] = states[key]
             else:
                 tp_states[key] = states[key]

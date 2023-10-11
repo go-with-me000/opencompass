@@ -33,7 +33,7 @@ winogrande_eval_cfg = dict(
 
 winogrande_datasets = [
     dict(
-        abbr="winogrande",
+        abbr="winogrande_a9",
         type=winograndeDataset_V2,
         path="winogrande",
         name="winogrande_xs",

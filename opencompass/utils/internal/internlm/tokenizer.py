@@ -17,6 +17,9 @@ class LLMTokenizer(object):
         elif self.tokenizer_type in ['llama', 'v7']:
             self.bos_token_id = self.pad_token_id = 1
             self.eos_token_id = 2
+        elif self.tokenizer_type == 'baichuan2':
+            self.bos_token_id = self.pad_token_id = 1
+            self.eos_token_id = 2
         else:
             self.bos_token_id = self.pad_token_id = 1
             self.eos_token_id = 0

@@ -105,25 +105,25 @@ models = [
     #     run_cfg=dict(num_gpus=1, num_procs=1),
     # )
 
-    # dict(
-    #     abbr="Mistral-7B_0",
-    #     type=HuggingFaceCausalLM,
-    #     path="/mnt/petrelfs/share_data/chenkeyu1/models/huggingface/Mistral-7B-v0.1",
-    #     tokenizer_kwargs=dict(padding_side='left',
-    #                           truncation_side='left',
-    #                           trust_remote_code=True,
-    #                           # use_fast=False,
-    #                           ),
-    #     max_out_len=100,
-    #     max_seq_len=2048,
-    #     batch_size=16,
-    #     model_kwargs=dict(device_map='auto',
-    #                       trust_remote_code=True,
-    #                       ),
-    #     batch_padding=True,
-    #     pad_token_id=0,
-    #     run_cfg=dict(num_gpus=1, num_procs=1),
-    # ),
+    dict(
+        abbr="Mistral-7B",
+        type=HuggingFaceCausalLM,
+        path="/mnt/petrelfs/share_data/chenkeyu1/models/huggingface/Mistral-7B-v0.1",
+        tokenizer_kwargs=dict(padding_side='left',
+                              truncation_side='left',
+                              trust_remote_code=True,
+                              # use_fast=False,
+                              ),
+        max_out_len=100,
+        max_seq_len=2048,
+        batch_size=16,
+        model_kwargs=dict(device_map='auto',
+                          trust_remote_code=True,
+                          ),
+        batch_padding=True,
+        pad_token_id=0,
+        run_cfg=dict(num_gpus=1, num_procs=1),
+    ),
 
     # dict(
     #     abbr="CodeLlama-7b-hf",
@@ -182,22 +182,22 @@ models = [
     #                      ),
     #    run_cfg=dict(num_gpus=1, num_procs=1),
     # ),
-    dict(
-        type=HuggingFaceCausalLM,
-        abbr='phi-1.5-1.3b-hf',
-        path='/mnt/petrelfs/share_data/huggingface_models/phi-1.5/phi-1_5',
-        tokenizer_kwargs=dict(
-            padding_side='left',
-            truncation_side='left',
-            trust_remote_code=True,
-        ),
-        max_out_len=100,
-        max_seq_len=2048,
-        batch_size=8,
-        model_kwargs=dict(
-            trust_remote_code=True,
-            torch_dtype=None,
-        ),
-        run_cfg=dict(num_gpus=1, num_procs=1),
-    )
+    # dict(
+    #     type=HuggingFaceCausalLM,
+    #     abbr='phi-1.5-1.3b-hf',
+    #     path='/mnt/petrelfs/share_data/huggingface_models/phi-1.5/phi-1_5',
+    #     tokenizer_kwargs=dict(
+    #         padding_side='left',
+    #         truncation_side='left',
+    #         trust_remote_code=True,
+    #     ),
+    #     max_out_len=100,
+    #     max_seq_len=2048,
+    #     batch_size=8,
+    #     model_kwargs=dict(
+    #         trust_remote_code=True,
+    #         torch_dtype=None,
+    #     ),
+    #     run_cfg=dict(num_gpus=1, num_procs=1),
+    # )
 ]

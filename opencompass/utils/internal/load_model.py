@@ -13,7 +13,7 @@ import time
 import colossalai
 import torch
 from fairscale.nn.model_parallel.initialize import initialize_model_parallel
-from llama import LLaMA, ModelArgs, Tokenizer, Transformer
+from llama import Llama, ModelArgs, Tokenizer, Transformer
 from sentencepiece import SentencePieceProcessor
 
 from opencompass.utils.internal.test.auto_test_dict import (basic_config, convert2run, gen_masks,
@@ -279,7 +279,7 @@ def load_from_llama(
     max_batch_size: int,
     tokenizer_path: str,
     tokenizer_type: str,
-) -> LLaMA:
+) -> Llama:
     proxy_off()
     client = Client()
     start_time = time.time()

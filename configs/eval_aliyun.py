@@ -6,17 +6,17 @@ from opencompass.tasks import OpenICLInferTask, OpenICLEvalTask
 
 with read_base():
     # from .collections.C_plus import datasets
-    # from .collections.example import datasets
-    from .collections.base_small import datasets
+    from .collections.example import datasets
+    # from .collections.base_small import datasets
 
-    from .models.huggingface import models
+    # from .models.huggingface import models
     # from .models.llama import models
-    # from .models.model_10_08.models_aliyun import models
+    from .models.model_10_10.models_aliyun import models
 
     from .summarizers.small import summarizer
 
 
-work_dir = './outputs/2023_10_08/'
+work_dir = './outputs/2023_10_10/'
 
 
 

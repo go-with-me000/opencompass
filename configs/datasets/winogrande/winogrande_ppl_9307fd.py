@@ -24,7 +24,7 @@ winogrande_eval_cfg = dict(evaluator=dict(type=AccEvaluator), )
 
 winogrande_datasets = [
     dict(
-        abbr='winogrande',
+        abbr='winogrande_930',
         type=winograndeDataset,
         path='winogrande',
         name='winogrande_xs',

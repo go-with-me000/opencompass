@@ -15,7 +15,7 @@ with read_base():
 
 # datasets 在 from ..datasets.collections.chat_medium import datasets 已经设置好了
 # datasets = [..]
-work_dir = './outputs/2023_10_08/'
+work_dir = './outputs/2023_10_10/'
 
 
 infer = dict(
@@ -60,11 +60,26 @@ models = [
     #     run_cfg=dict(num_gpus=1, num_procs=1),
     #     meta_template=meta_template,
     # ),
+    # dict(
+    #     abbr="e11a714_Newton_2795",
+    #     type=InternLM,
+    #     model_type="LLAMA",
+    #     path="/mnt/petrelfs/share_data/gaoyang/ckpts/e11a714_Newton_20B_0.2.0@6500_toolbench_safety/2795",
+    #     tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
+    #     tokenizer_type='v7',
+    #     module_path="/mnt/petrelfs/share_data/yanhang/issue/20230921/tf32/",
+    #     model_config="/mnt/petrelfs/share_data/yanhang/issue/20230921/a550b8122c1666e19a4a7a54991d056fe7c3e57e/configs/Newton_20B_a550b8122c1666e19a4a7a54991d056fe7c3e57e.py",
+    #     max_out_len=100,
+    #     max_seq_len=2048,
+    #     batch_size=16,
+    #     meta_template=meta_template,
+    #     run_cfg=dict(num_gpus=4, num_procs=4)
+    # ),
     dict(
-        abbr="e11a714_Newton_2795",
+        abbr="e11a714_second_2795",
         type=InternLM,
         model_type="LLAMA",
-        path="/mnt/petrelfs/share_data/gaoyang/ckpts/e11a714_Newton_20B_0.2.0@6500_toolbench_safety/2795",
+        path="/mnt/petrelfs/share_data/gaoyang/ckpts/e11a714_20B_model_0.2.0/2795",
         tokenizer_path='/mnt/petrelfs/share_data/yanhang/tokenizes/V7.model',
         tokenizer_type='v7',
         module_path="/mnt/petrelfs/share_data/yanhang/issue/20230921/tf32/",
